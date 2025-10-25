@@ -25,8 +25,8 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('Base NestJS API')
-    .setDescription('API documentation for Base NestJS API application')
+    .setTitle('InsightAPI')
+    .setDescription('API documentation for InsightAPI application')
     .setVersion('1.0')
     .addTag('Payment', 'Payment management endpoints')
     .addBearerAuth()
