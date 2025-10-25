@@ -1,4 +1,4 @@
-Linkler:
+RSS Linkler:
 https://www.borsagundem.com.tr/rss-baglantilari
 https://www.ntv.com.tr/ekonomi.rss
 https://www.milliyet.com.tr/rss/rssnew/ekonomi.xml
