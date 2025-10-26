@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
 import { IScheduledTask } from '../../../common/interfaces/scheduled-task.interface';
-import { RssSourcesService } from '../rss-sources.service';
+import { RssSourcesService } from '../services/rss-sources.service';
 import { RssFetchService } from '../services/rss-fetch.service';
 
 /**

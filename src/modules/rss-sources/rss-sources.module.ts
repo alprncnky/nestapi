@@ -2,31 +2,46 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RssSourceSchema } from './schemas/rss-source.schema';
 import { SourceReliabilityScoreSchema } from './schemas/source-reliability-score.schema';
-import { RssSourcesController } from './rss-sources.controller';
-import { RssSourcesService } from './rss-sources.service';
-import { RssParserService } from './rss-parser.service';
+import { RssSourcesController } from './controllers/rss-sources.controller';
+import { RssSourcesService } from './services/rss-sources.service';
+import { RssParserService } from './services/rss-parser.service';
 import { RssFetchService } from './services/rss-fetch.service';
+import { RssSourceRepository } from './repositories/rss-source.repository';
 import { RssFetchSchedule } from './schedules/rss-fetch.schedule';
 import { BaseSchedulerService } from '../../common/services/base-scheduler.service';
 import { NewsModule } from '../news/news.module';
 
 /**
  * RSS Sources Module
- * Handles RSS feed source management
  * 
- * Features:
- * - CRUD operations for RSS sources
- * - Source reliability tracking
- * - Category-based filtering
- * - Active source management
- * - RSS feed parsing (RssParserService)
- * - Business logic for RSS fetching (RssFetchService)
- * - Scheduled RSS fetching (RssFetchSchedule)
+ * Clean Architecture Structure:
  * 
- * Architecture:
- * - Controller → API endpoints
- * - Service → Business logic
- * - Schedule → Orchestration (registered with BaseScheduler)
+ * 1. API Layer (controllers/)
+ *    - RssSourcesController: HTTP endpoints, request/response handling
+ * 
+ * 2. Business Layer (services/)
+ *    - RssSourcesService: Main CRUD business logic & validation
+ *    - RssFetchService: RSS feed processing business logic
+ *    - RssParserService: RSS parsing utility service
+ * 
+ * 3. Data Layer (repositories/)
+ *    - RssSourceRepository: Database operations, query building
+ * 
+ * 4. Domain Layer (entities/, enums/)
+ *    - Entity definitions and domain enums
+ * 
+ * 5. Contracts (dto/, responses/)
+ *    - Input DTOs and output Response DTOs
+ * 
+ * 6. Orchestration (schedules/)
+ *    - RssFetchSchedule: Scheduled tasks orchestration
+ * 
+ * Similar to .NET structure:
+ * - Controllers → API Layer
+ * - Services → Business Layer
+ * - Repositories → DataAccess Layer
+ * - Entities → Domain Layer
+ * - DTOs → Contracts
  */
 @Module({
   imports: [
@@ -36,14 +51,27 @@ import { NewsModule } from '../news/news.module';
     ]),
     NewsModule, // Import NewsModule for NewsService
   ],
-  controllers: [RssSourcesController],
+  controllers: [
+    RssSourcesController,
+  ],
   providers: [
+    // Business Layer
     RssSourcesService,
     RssParserService,
-    RssFetchService,     // Business logic
-    RssFetchSchedule,    // Schedule orchestration
+    RssFetchService,
+    
+    // Data Layer
+    RssSourceRepository,
+    
+    // Orchestration
+    RssFetchSchedule,
   ],
-  exports: [RssSourcesService, RssParserService, RssFetchService],
+  exports: [
+    RssSourcesService,
+    RssParserService,
+    RssFetchService,
+    RssSourceRepository,
+  ],
 })
 export class RssSourcesModule implements OnModuleInit {
   constructor(
