@@ -2,7 +2,6 @@ import { Injectable, NotFoundException, ConflictException, BadRequestException }
 import { RssSource } from '../entities/rss-source.entity';
 import { CreateRssSourceDto } from '../dto/create-rss-source.dto';
 import { UpdateRssSourceDto } from '../dto/update-rss-source.dto';
-import { SourceCategoryEnum } from '../enums/source-category.enum';
 import { RssSourceRepository } from '../repositories/rss-source.repository';
 
 @Injectable()
@@ -23,28 +22,11 @@ export class RssSourcesService {
     return await this.rssSourceRepository.save(rssSource);
   }
 
-  async findAll(): Promise<RssSource[]> {
-    return await this.rssSourceRepository.findAll();
-  }
-
-  async findOne(id: number): Promise<RssSource> {
+  async update(id: number, updateRssSourceDto: UpdateRssSourceDto): Promise<RssSource> {
     const source = await this.rssSourceRepository.findById(id);
     if (!source) {
       throw new NotFoundException(`RSS Source with ID ${id} not found`);
     }
-    return source;
-  }
-
-  async findActiveSourcesByCategory(category: SourceCategoryEnum): Promise<RssSource[]> {
-    return await this.rssSourceRepository.findActiveByCategory(category);
-  }
-
-  async findActiveSources(): Promise<RssSource[]> {
-    return await this.rssSourceRepository.findActive();
-  }
-
-  async update(id: number, updateRssSourceDto: UpdateRssSourceDto): Promise<RssSource> {
-    const source = await this.findOne(id);
 
     if (updateRssSourceDto.url && updateRssSourceDto.url !== source.url) {
       await this.validateUniqueUrl(updateRssSourceDto.url);
@@ -55,18 +37,21 @@ export class RssSourcesService {
   }
 
   async updateLastFetchTime(id: number): Promise<void> {
-    await this.rssSourceRepository.updateLastFetchTime(id, new Date());
+    await this.rssSourceRepository.update(id, { lastFetchedAt: new Date() } as any);
   }
 
   async updateReliabilityScore(sourceId: number, score: number): Promise<void> {
     if (score < 0 || score > 100) {
       throw new BadRequestException('Reliability score must be between 0 and 100');
     }
-    await this.rssSourceRepository.updateReliabilityScore(sourceId, score);
+    await this.rssSourceRepository.update(sourceId, { reliabilityScore: score } as any);
   }
 
   async remove(id: number): Promise<void> {
-    const source = await this.findOne(id);
+    const source = await this.rssSourceRepository.findById(id);
+    if (!source) {
+      throw new NotFoundException(`RSS Source with ID ${id} not found`);
+    }
     await this.rssSourceRepository.remove(source);
   }
 
