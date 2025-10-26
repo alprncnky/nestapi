@@ -44,10 +44,7 @@ export class NewsReliabilityController extends BaseController<
   @GetPendingEndpoint('Prediction', ReliabilityTrackingListResponseDto)
   async getPendingPredictions(): Promise<ReliabilityTrackingListResponseDto> {
     const predictions = await this.newsReliabilityService.getPendingPredictions();
-    return new ReliabilityTrackingListResponseDto(
-      predictions.map((p) => new ReliabilityTrackingResponseDto(p)),
-      predictions.length,
-    );
+    return new ReliabilityTrackingListResponseDto(predictions.map((p) => new ReliabilityTrackingResponseDto(p)), predictions.length);
   }
 
   /**
@@ -55,14 +52,9 @@ export class NewsReliabilityController extends BaseController<
    * GET /reliability/article/:articleId
    */
   @GetByFieldEndpoint('ReliabilityTracking', 'article', ReliabilityTrackingListResponseDto)
-  async getByArticle(
-    @Param('article', ParseIntPipe) articleId: number,
-  ): Promise<ReliabilityTrackingListResponseDto> {
+  async getByArticle(@Param('article', ParseIntPipe) articleId: number): Promise<ReliabilityTrackingListResponseDto> {
     const records = await this.newsReliabilityService.findByArticle(articleId);
-    return new ReliabilityTrackingListResponseDto(
-      records.map((r) => new ReliabilityTrackingResponseDto(r)),
-      records.length,
-    );
+    return new ReliabilityTrackingListResponseDto(records.map((r) => new ReliabilityTrackingResponseDto(r)), records.length);
   }
 
   /**
@@ -70,14 +62,9 @@ export class NewsReliabilityController extends BaseController<
    * GET /reliability/stock/:symbol
    */
   @GetByFieldEndpoint('ReliabilityTracking', 'stock', ReliabilityTrackingListResponseDto)
-  async getByStock(
-    @Param('stock') symbol: string,
-  ): Promise<ReliabilityTrackingListResponseDto> {
+  async getByStock(@Param('stock') symbol: string): Promise<ReliabilityTrackingListResponseDto> {
     const records = await this.newsReliabilityService.findByStock(symbol);
-    return new ReliabilityTrackingListResponseDto(
-      records.map((r) => new ReliabilityTrackingResponseDto(r)),
-      records.length,
-    );
+    return new ReliabilityTrackingListResponseDto(records.map((r) => new ReliabilityTrackingResponseDto(r)), records.length);
   }
 
   /**
@@ -85,13 +72,7 @@ export class NewsReliabilityController extends BaseController<
    * GET /reliability/source/:sourceId/accuracy
    */
   @GetReportEndpoint('Source', 'accuracy', true)
-  async getSourceAccuracy(
-    @Param('id', ParseIntPipe) sourceId: number,
-  ): Promise<{
-    totalPredictions: number;
-    correctDirectionPredictions: number;
-    averageAccuracy: number;
-  }> {
+  async getSourceAccuracy(@Param('id', ParseIntPipe) sourceId: number): Promise<{ totalPredictions: number; correctDirectionPredictions: number; averageAccuracy: number }> {
     return await this.newsReliabilityService.getSourceAccuracyReport(sourceId);
   }
 }

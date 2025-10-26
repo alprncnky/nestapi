@@ -43,10 +43,7 @@ export class RssSourcesController extends BaseController<
   @GetActiveEndpoint('RssSource', RssSourceListResponseDto)
   async getActiveSources(): Promise<RssSourceListResponseDto> {
     const sources = await this.rssSourcesService.findActiveSources();
-    return new RssSourceListResponseDto(
-      sources.map((source) => new RssSourceResponseDto(source)),
-      sources.length,
-    );
+    return new RssSourceListResponseDto(sources.map((source) => new RssSourceResponseDto(source)), sources.length);
   }
 
   /**
@@ -54,16 +51,9 @@ export class RssSourcesController extends BaseController<
    * GET /rss-sources/category/:category
    */
   @GetByCategoryEndpoint('RssSource', RssSourceListResponseDto, SourceCategoryEnum)
-  async getByCategory(
-    @Param('category', new ParseEnumPipe(SourceCategoryEnum))
-    category: SourceCategoryEnum,
-  ): Promise<RssSourceListResponseDto> {
-    const sources =
-      await this.rssSourcesService.findActiveSourcesByCategory(category);
-    return new RssSourceListResponseDto(
-      sources.map((source) => new RssSourceResponseDto(source)),
-      sources.length,
-    );
+  async getByCategory(@Param('category', new ParseEnumPipe(SourceCategoryEnum)) category: SourceCategoryEnum): Promise<RssSourceListResponseDto> {
+    const sources = await this.rssSourcesService.findActiveSourcesByCategory(category);
+    return new RssSourceListResponseDto(sources.map((source) => new RssSourceResponseDto(source)), sources.length);
   }
 
   /**
@@ -71,13 +61,9 @@ export class RssSourcesController extends BaseController<
    * PATCH /rss-sources/:id/reliability/:score
    */
   @UpdateFieldEndpoint('RssSource', 'reliability', RssSourceResponseDto)
-  async updateReliability(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('reliability', ParseIntPipe) score: number,
-  ): Promise<RssSourceResponseDto> {
+  async updateReliability(@Param('id', ParseIntPipe) id: number, @Param('reliability', ParseIntPipe) score: number): Promise<RssSourceResponseDto> {
     await this.rssSourcesService.updateReliabilityScore(id, score);
-    const source = await this.rssSourcesService.findOne(id);
-    return new RssSourceResponseDto(source);
+    return new RssSourceResponseDto(await this.rssSourcesService.findOne(id));
   }
 }
 

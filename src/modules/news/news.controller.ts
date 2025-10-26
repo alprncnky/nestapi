@@ -57,15 +57,9 @@ export class NewsController extends BaseController<
    * GET /news/category/:category
    */
   @GetByCategoryEndpoint('NewsArticle', NewsArticleListResponseDto, NewsCategoryEnum)
-  async getByCategory(
-    @Param('category', new ParseEnumPipe(NewsCategoryEnum))
-    category: NewsCategoryEnum,
-  ): Promise<NewsArticleListResponseDto> {
+  async getByCategory(@Param('category', new ParseEnumPipe(NewsCategoryEnum)) category: NewsCategoryEnum): Promise<NewsArticleListResponseDto> {
     const articles = await this.newsService.findByCategory(category);
-    return new NewsArticleListResponseDto(
-      articles.map((article) => new NewsArticleResponseDto(article)),
-      articles.length,
-    );
+    return new NewsArticleListResponseDto(articles.map((article) => new NewsArticleResponseDto(article)), articles.length);
   }
 
   /**
@@ -73,15 +67,9 @@ export class NewsController extends BaseController<
    * GET /news/status/:status
    */
   @GetByStatusEndpoint('NewsArticle', NewsArticleListResponseDto, NewsStatusEnum)
-  async getByStatus(
-    @Param('status', new ParseEnumPipe(NewsStatusEnum))
-    status: NewsStatusEnum,
-  ): Promise<NewsArticleListResponseDto> {
+  async getByStatus(@Param('status', new ParseEnumPipe(NewsStatusEnum)) status: NewsStatusEnum): Promise<NewsArticleListResponseDto> {
     const articles = await this.newsService.findByStatus(status);
-    return new NewsArticleListResponseDto(
-      articles.map((article) => new NewsArticleResponseDto(article)),
-      articles.length,
-    );
+    return new NewsArticleListResponseDto(articles.map((article) => new NewsArticleResponseDto(article)), articles.length);
   }
 
   /**
@@ -89,14 +77,9 @@ export class NewsController extends BaseController<
    * GET /news/:id/tags
    */
   @GetRelatedEndpoint('NewsArticle', 'tags', NewsTagListResponseDto)
-  async getArticleTags(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<NewsTagListResponseDto> {
-    // Verify article exists
-    await this.newsService.findOne(id);
-
-    // For now, return empty list - tags will be populated by NLP processing
-    return new NewsTagListResponseDto([], 0);
+  async getArticleTags(@Param('id', ParseIntPipe) id: number): Promise<NewsTagListResponseDto> {
+    await this.newsService.findOne(id); // Verify article exists
+    return new NewsTagListResponseDto([], 0); // Tags will be populated by NLP processing
   }
 
   /**
@@ -104,14 +87,9 @@ export class NewsController extends BaseController<
    * GET /news/:id/stocks
    */
   @GetRelatedEndpoint('NewsArticle', 'stocks', StockMentionListResponseDto)
-  async getArticleStocks(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<StockMentionListResponseDto> {
+  async getArticleStocks(@Param('id', ParseIntPipe) id: number): Promise<StockMentionListResponseDto> {
     const mentions = await this.stockMentionsService.findByArticle(id);
-    return new StockMentionListResponseDto(
-      mentions.map((mention) => new StockMentionResponseDto(mention)),
-      mentions.length,
-    );
+    return new StockMentionListResponseDto(mentions.map((mention) => new StockMentionResponseDto(mention)), mentions.length);
   }
 
   /**
@@ -119,14 +97,9 @@ export class NewsController extends BaseController<
    * GET /news/:id/entities
    */
   @GetRelatedEndpoint('NewsArticle', 'entities', ExtractedItemListResponseDto)
-  async getExtractedEntities(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<ExtractedItemListResponseDto> {
+  async getExtractedEntities(@Param('id', ParseIntPipe) id: number): Promise<ExtractedItemListResponseDto> {
     const items = await this.extractedItemsService.findByArticle(id);
-    return new ExtractedItemListResponseDto(
-      items.map((item) => new ExtractedItemResponseDto(item)),
-      items.length,
-    );
+    return new ExtractedItemListResponseDto(items.map((item) => new ExtractedItemResponseDto(item)), items.length);
   }
 
   /**
@@ -134,13 +107,9 @@ export class NewsController extends BaseController<
    * PATCH /news/:id/sentiment (expects body: { sentimentScore: number })
    */
   @UpdateFieldEndpoint('NewsArticle', 'sentiment', NewsArticleResponseDto)
-  async updateSentiment(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: { sentimentScore: number },
-  ): Promise<NewsArticleResponseDto> {
+  async updateSentiment(@Param('id', ParseIntPipe) id: number, @Body() dto: { sentimentScore: number }): Promise<NewsArticleResponseDto> {
     await this.newsService.updateSentiment(id, dto.sentimentScore);
-    const article = await this.newsService.findOne(id);
-    return new NewsArticleResponseDto(article);
+    return new NewsArticleResponseDto(await this.newsService.findOne(id));
   }
 }
 
