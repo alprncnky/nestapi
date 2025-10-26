@@ -93,6 +93,8 @@ export class RssFetchSchedule implements IScheduledTask {
    * Example: Only run during certain hours
    */
   async shouldRun(): Promise<boolean> {
+    return true;
+    // EXAMPLE USAGE
     // Example: Only run during business hours (6 AM to 11 PM)
     const hour = new Date().getHours();
     const shouldRun = hour >= 6 && hour <= 23;
