@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { BaseSchedulerService } from './common/services/base-scheduler.service';
 import { PaymentModule } from './modules/payment/payment.module';
 import { RssSourcesModule } from './modules/rss-sources/rss-sources.module';
 import { NewsModule } from './modules/news/news.module';
@@ -26,6 +28,9 @@ import { validationSchema } from './config/validation.schema';
       },
     }),
 
+    // Enable scheduling globally for all modules
+    ScheduleModule.forRoot(),
+
     // TypeORM with async configuration using ConfigService
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -42,6 +47,10 @@ import { validationSchema } from './config/validation.schema';
     NewsReliabilityModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    BaseSchedulerService, // Global scheduler service for all scheduled tasks
+  ],
+  exports: [BaseSchedulerService], // Export for use in feature modules
 })
 export class AppModule {}

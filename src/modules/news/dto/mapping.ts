@@ -30,10 +30,18 @@ export const CreateNewsArticleMapping = {
     StringField('Article summary', 'Brief summary of the article', false, 10, 5000),
   content: () =>
     StringField('Full article content', 'Full content...', false, 10, 50000),
+  contentPlain: () =>
+    StringField('Plain text content', 'Plain text content without HTML', false, 10, 50000),
   publishedAt: () =>
     StringField('Publication date', '2024-01-01T00:00:00Z', true),
+  scrapedAt: () =>
+    StringField('Scrape date', '2024-01-01T00:00:00Z', false),
   imageUrl: () =>
     StringField('Image URL', 'https://example.com/image.jpg', false, 10, 500),
+  status: () =>
+    StringField('Processing status', 'PENDING', false),
+  isDuplicate: () =>
+    BooleanField('Is duplicate', false, false),
   category: () =>
     EnumField(NewsCategoryEnum, 'News category', NewsCategoryEnum.COMPANY_NEWS, false),
   impactLevel: () =>

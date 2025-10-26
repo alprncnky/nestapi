@@ -4,7 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, MoreThan } from 'typeorm';
 import { NewsArticle } from './entities/news-article.entity';
 import { CreateNewsArticleDto } from './dto/create-news-article.dto';
 import { UpdateNewsArticleDto } from './dto/update-news-article.dto';
@@ -168,6 +168,30 @@ export class NewsService {
   async remove(id: number): Promise<void> {
     const article = await this.findOne(id);
     await this.newsRepository.remove(article);
+  }
+
+  /**
+   * Find article by URL (for duplicate detection)
+   */
+  async findByUrl(url: string): Promise<NewsArticle | null> {
+    return await this.newsRepository.findOne({
+      where: { url },
+    });
+  }
+
+  /**
+   * Find recent articles (for duplicate detection)
+   */
+  async findRecentArticles(hours: number): Promise<NewsArticle[]> {
+    const date = new Date();
+    date.setHours(date.getHours() - hours);
+
+    return await this.newsRepository.find({
+      where: {
+        scrapedAt: MoreThan(date),
+      },
+      order: { scrapedAt: 'DESC' },
+    });
   }
 
   /**

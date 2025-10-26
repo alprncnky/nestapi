@@ -16,8 +16,12 @@ export class CreateNewsArticleDto extends BaseCreateDto {
   guid: string;
   summary?: string;
   content?: string;
+  contentPlain?: string;
   publishedAt: Date;
+  scrapedAt?: Date;
   imageUrl?: string;
+  status?: string;
+  isDuplicate?: boolean;
   category?: NewsCategoryEnum;
   impactLevel?: ImpactLevelEnum;
 }
