@@ -1,6 +1,7 @@
-import { Param, ParseEnumPipe, ParseIntPipe } from '@nestjs/common';
+import { Param, ParseEnumPipe, ParseIntPipe, Body } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
 import {
+  CreateEndpoint,
   GetActiveEndpoint,
   GetByCategoryEndpoint,
   UpdateFieldEndpoint,
@@ -35,6 +36,15 @@ export class RssSourcesController extends BaseController<
   protected getResponseClass = () => RssSourceResponseDto;
   protected getListResponseClass = () => RssSourceListResponseDto;
   protected getEntityName = () => 'RssSource';
+
+  /**
+   * Create a new RSS source
+   * POST /rss-sources
+   */
+  @CreateEndpoint('RssSource', RssSourceResponseDto)
+  create(@Body() createRssSourceDto: CreateRssSourceDto) {
+    return this.createEntity(createRssSourceDto);
+  }
 
   /**
    * Get all active RSS sources
