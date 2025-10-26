@@ -2,11 +2,11 @@ import { applyDecorators, Post, Get, Patch, Delete, Type } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
 /**
- * Decorator for CREATE endpoints (POST /)
+ * Decorator for CREATE endpoints (POST /create)
  */
 export function CreateEndpoint(entityName: string, responseType: any) {
   return applyDecorators(
-    Post(),
+    Post('create'),
     ApiOperation({ summary: `Create a new ${entityName}` }),
     ApiResponse({
       status: 201,
@@ -18,11 +18,11 @@ export function CreateEndpoint(entityName: string, responseType: any) {
 }
 
 /**
- * Decorator for GET ALL endpoints (GET /)
+ * Decorator for GET ALL endpoints (GET /list)
  */
 export function GetAllEndpoint(entityName: string, responseType: any, queryParams?: string[]) {
   const decorators = [
-    Get(),
+    Get('list'),
     ApiOperation({ summary: `Get all ${entityName}s` }),
     ApiResponse({
       status: 200,

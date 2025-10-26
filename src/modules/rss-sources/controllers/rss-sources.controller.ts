@@ -1,6 +1,6 @@
-import { Param, ParseEnumPipe, ParseIntPipe, Body, NotFoundException } from '@nestjs/common';
+import { Param, ParseEnumPipe, ParseIntPipe, NotFoundException } from '@nestjs/common';
 import { CrudController } from '../../../common/decorators/crud-controller.decorator';
-import { CreateEndpoint, GetActiveEndpoint, GetByCategoryEndpoint, UpdateFieldEndpoint } from '../../../common/decorators/endpoint.decorator';
+import { GetActiveEndpoint, GetByCategoryEndpoint, UpdateFieldEndpoint } from '../../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../../common/base/base-controller';
 import { RssSource } from '../entities/rss-source.entity';
 import { CreateRssSourceDto } from '../dto/create-rss-source.dto';
@@ -24,10 +24,6 @@ export class RssSourcesController extends BaseController<RssSource, CreateRssSou
   protected getListResponseClass = () => RssSourceListResponseDto;
   protected getEntityName = () => 'RssSource';
 
-  @CreateEndpoint('RssSource', RssSourceResponseDto)
-  create(@Body() createRssSourceDto: CreateRssSourceDto) {
-    return this.createEntity(createRssSourceDto);
-  }
 
   @GetActiveEndpoint('RssSource', RssSourceListResponseDto)
   async getActiveSources(): Promise<RssSourceListResponseDto> {
