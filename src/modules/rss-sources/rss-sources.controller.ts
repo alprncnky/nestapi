@@ -37,39 +37,23 @@ export class RssSourcesController extends BaseController<
   protected getListResponseClass = () => RssSourceListResponseDto;
   protected getEntityName = () => 'RssSource';
 
-  /**
-   * Create a new RSS source
-   * POST /rss-sources
-   */
   @CreateEndpoint('RssSource', RssSourceResponseDto)
   create(@Body() createRssSourceDto: CreateRssSourceDto) {
     return this.createEntity(createRssSourceDto);
   }
 
-  /**
-   * Get all active RSS sources
-   * GET /rss-sources/active
-   */
   @GetActiveEndpoint('RssSource', RssSourceListResponseDto)
   async getActiveSources(): Promise<RssSourceListResponseDto> {
     const sources = await this.rssSourcesService.findActiveSources();
     return new RssSourceListResponseDto(sources.map((source) => new RssSourceResponseDto(source)), sources.length);
   }
 
-  /**
-   * Get RSS sources by category
-   * GET /rss-sources/category/:category
-   */
   @GetByCategoryEndpoint('RssSource', RssSourceListResponseDto, SourceCategoryEnum)
   async getByCategory(@Param('category', new ParseEnumPipe(SourceCategoryEnum)) category: SourceCategoryEnum): Promise<RssSourceListResponseDto> {
     const sources = await this.rssSourcesService.findActiveSourcesByCategory(category);
     return new RssSourceListResponseDto(sources.map((source) => new RssSourceResponseDto(source)), sources.length);
   }
 
-  /**
-   * Update reliability score for a source
-   * PATCH /rss-sources/:id/reliability/:score
-   */
   @UpdateFieldEndpoint('RssSource', 'reliability', RssSourceResponseDto)
   async updateReliability(@Param('id', ParseIntPipe) id: number, @Param('reliability', ParseIntPipe) score: number): Promise<RssSourceResponseDto> {
     await this.rssSourcesService.updateReliabilityScore(id, score);
