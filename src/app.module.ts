@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PaymentModule } from './modules/payment/payment.module';
+import { RssSourcesModule } from './modules/rss-sources/rss-sources.module';
+import { NewsModule } from './modules/news/news.module';
+import { NewsReliabilityModule } from './modules/news-reliability/news-reliability.module';
 import databaseConfig from './config/database.config';
 import { validationSchema } from './config/validation.schema';
 
@@ -34,6 +37,9 @@ import { validationSchema } from './config/validation.schema';
 
     // Feature modules
     PaymentModule,
+    RssSourcesModule,
+    NewsModule,
+    NewsReliabilityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
