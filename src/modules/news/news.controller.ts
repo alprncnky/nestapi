@@ -1,14 +1,11 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseEnumPipe,
-  ParseIntPipe,
-  Patch,
-  Body,
-} from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Param, ParseEnumPipe, ParseIntPipe, Body } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
+import {
+  GetByCategoryEndpoint,
+  GetByStatusEndpoint,
+  GetRelatedEndpoint,
+  UpdateFieldEndpoint,
+} from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import { NewsArticle } from './entities/news-article.entity';
 import { CreateNewsArticleDto } from './dto/create-news-article.dto';
@@ -59,18 +56,7 @@ export class NewsController extends BaseController<
    * Get news articles by category
    * GET /news/category/:category
    */
-  @Get('category/:category')
-  @ApiOperation({ summary: 'Get news articles by category' })
-  @ApiParam({
-    name: 'category',
-    enum: NewsCategoryEnum,
-    description: 'News category',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of news articles in the specified category',
-    type: NewsArticleListResponseDto,
-  })
+  @GetByCategoryEndpoint('NewsArticle', NewsArticleListResponseDto, NewsCategoryEnum)
   async getByCategory(
     @Param('category', new ParseEnumPipe(NewsCategoryEnum))
     category: NewsCategoryEnum,
@@ -86,18 +72,7 @@ export class NewsController extends BaseController<
    * Get news articles by status
    * GET /news/status/:status
    */
-  @Get('status/:status')
-  @ApiOperation({ summary: 'Get news articles by processing status' })
-  @ApiParam({
-    name: 'status',
-    enum: NewsStatusEnum,
-    description: 'Processing status',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of news articles with the specified status',
-    type: NewsArticleListResponseDto,
-  })
+  @GetByStatusEndpoint('NewsArticle', NewsArticleListResponseDto, NewsStatusEnum)
   async getByStatus(
     @Param('status', new ParseEnumPipe(NewsStatusEnum))
     status: NewsStatusEnum,
@@ -113,14 +88,7 @@ export class NewsController extends BaseController<
    * Get tags for a specific article
    * GET /news/:id/tags
    */
-  @Get(':id/tags')
-  @ApiOperation({ summary: 'Get tags for a specific news article' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Article ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of tags for the article',
-    type: NewsTagListResponseDto,
-  })
+  @GetRelatedEndpoint('NewsArticle', 'tags', NewsTagListResponseDto)
   async getArticleTags(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<NewsTagListResponseDto> {
@@ -135,14 +103,7 @@ export class NewsController extends BaseController<
    * Get stock mentions for a specific article
    * GET /news/:id/stocks
    */
-  @Get(':id/stocks')
-  @ApiOperation({ summary: 'Get stock mentions for a specific news article' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Article ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of stock mentions in the article',
-    type: StockMentionListResponseDto,
-  })
+  @GetRelatedEndpoint('NewsArticle', 'stocks', StockMentionListResponseDto)
   async getArticleStocks(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<StockMentionListResponseDto> {
@@ -157,16 +118,7 @@ export class NewsController extends BaseController<
    * Get extracted entities for a specific article
    * GET /news/:id/entities
    */
-  @Get(':id/entities')
-  @ApiOperation({
-    summary: 'Get extracted entities (NER results) for a specific news article',
-  })
-  @ApiParam({ name: 'id', type: 'number', description: 'Article ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of extracted entities from the article',
-    type: ExtractedItemListResponseDto,
-  })
+  @GetRelatedEndpoint('NewsArticle', 'entities', ExtractedItemListResponseDto)
   async getExtractedEntities(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ExtractedItemListResponseDto> {
@@ -179,16 +131,9 @@ export class NewsController extends BaseController<
 
   /**
    * Update sentiment score for an article
-   * PATCH /news/:id/sentiment
+   * PATCH /news/:id/sentiment (expects body: { sentimentScore: number })
    */
-  @Patch(':id/sentiment')
-  @ApiOperation({ summary: 'Update sentiment score for a news article' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Article ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sentiment updated successfully',
-    type: NewsArticleResponseDto,
-  })
+  @UpdateFieldEndpoint('NewsArticle', 'sentiment', NewsArticleResponseDto)
   async updateSentiment(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: { sentimentScore: number },

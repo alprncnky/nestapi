@@ -1,6 +1,11 @@
-import { Controller, Get, Param, ParseIntPipe, Patch, Body } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Param, ParseIntPipe } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
+import {
+  GetPendingEndpoint,
+  GetRelatedEndpoint,
+  GetByFieldEndpoint,
+  GetReportEndpoint,
+} from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import { NewsReliabilityTracking } from './entities/news-reliability-tracking.entity';
 import { CreateReliabilityTrackingDto } from './dto/create-reliability-tracking.dto';
@@ -36,13 +41,7 @@ export class NewsReliabilityController extends BaseController<
    * Get pending predictions (not yet evaluated)
    * GET /reliability/pending
    */
-  @Get('pending')
-  @ApiOperation({ summary: 'Get pending predictions awaiting evaluation' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of pending predictions',
-    type: ReliabilityTrackingListResponseDto,
-  })
+  @GetPendingEndpoint('Prediction', ReliabilityTrackingListResponseDto)
   async getPendingPredictions(): Promise<ReliabilityTrackingListResponseDto> {
     const predictions = await this.newsReliabilityService.getPendingPredictions();
     return new ReliabilityTrackingListResponseDto(
@@ -55,16 +54,9 @@ export class NewsReliabilityController extends BaseController<
    * Get reliability tracking by article
    * GET /reliability/article/:articleId
    */
-  @Get('article/:articleId')
-  @ApiOperation({ summary: 'Get reliability tracking records for a specific article' })
-  @ApiParam({ name: 'articleId', type: 'number', description: 'Article ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of tracking records for the article',
-    type: ReliabilityTrackingListResponseDto,
-  })
+  @GetByFieldEndpoint('ReliabilityTracking', 'article', ReliabilityTrackingListResponseDto)
   async getByArticle(
-    @Param('articleId', ParseIntPipe) articleId: number,
+    @Param('article', ParseIntPipe) articleId: number,
   ): Promise<ReliabilityTrackingListResponseDto> {
     const records = await this.newsReliabilityService.findByArticle(articleId);
     return new ReliabilityTrackingListResponseDto(
@@ -77,16 +69,9 @@ export class NewsReliabilityController extends BaseController<
    * Get reliability tracking by stock
    * GET /reliability/stock/:symbol
    */
-  @Get('stock/:symbol')
-  @ApiOperation({ summary: 'Get reliability tracking records for a specific stock' })
-  @ApiParam({ name: 'symbol', type: 'string', description: 'Stock symbol' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of tracking records for the stock',
-    type: ReliabilityTrackingListResponseDto,
-  })
+  @GetByFieldEndpoint('ReliabilityTracking', 'stock', ReliabilityTrackingListResponseDto)
   async getByStock(
-    @Param('symbol') symbol: string,
+    @Param('stock') symbol: string,
   ): Promise<ReliabilityTrackingListResponseDto> {
     const records = await this.newsReliabilityService.findByStock(symbol);
     return new ReliabilityTrackingListResponseDto(
@@ -99,15 +84,9 @@ export class NewsReliabilityController extends BaseController<
    * Get accuracy report for a source
    * GET /reliability/source/:sourceId/accuracy
    */
-  @Get('source/:sourceId/accuracy')
-  @ApiOperation({ summary: 'Get accuracy report for a news source' })
-  @ApiParam({ name: 'sourceId', type: 'number', description: 'Source ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Accuracy report for the source',
-  })
+  @GetReportEndpoint('Source', 'accuracy', true)
   async getSourceAccuracy(
-    @Param('sourceId', ParseIntPipe) sourceId: number,
+    @Param('id', ParseIntPipe) sourceId: number,
   ): Promise<{
     totalPredictions: number;
     correctDirectionPredictions: number;

@@ -1,5 +1,10 @@
-import { Controller, Get, Param, ParseEnumPipe, ParseIntPipe, Patch } from '@nestjs/common';
+import { Param, ParseEnumPipe, ParseIntPipe } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
+import {
+  GetActiveEndpoint,
+  GetByCategoryEndpoint,
+  UpdateFieldEndpoint,
+} from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import { RssSource } from './entities/rss-source.entity';
 import { CreateRssSourceDto } from './dto/create-rss-source.dto';
@@ -8,7 +13,6 @@ import { RssSourceResponseDto } from './responses/rss-source-response.dto';
 import { RssSourceListResponseDto } from './responses/rss-source-list-response.dto';
 import { RssSourcesService } from './rss-sources.service';
 import { SourceCategoryEnum } from './enums/source-category.enum';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 /**
  * Controller for RSS Source endpoints
@@ -36,13 +40,7 @@ export class RssSourcesController extends BaseController<
    * Get all active RSS sources
    * GET /rss-sources/active
    */
-  @Get('active')
-  @ApiOperation({ summary: 'Get all active RSS sources' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of active RSS sources',
-    type: RssSourceListResponseDto,
-  })
+  @GetActiveEndpoint('RssSource', RssSourceListResponseDto)
   async getActiveSources(): Promise<RssSourceListResponseDto> {
     const sources = await this.rssSourcesService.findActiveSources();
     return new RssSourceListResponseDto(
@@ -55,18 +53,7 @@ export class RssSourcesController extends BaseController<
    * Get RSS sources by category
    * GET /rss-sources/category/:category
    */
-  @Get('category/:category')
-  @ApiOperation({ summary: 'Get RSS sources by category' })
-  @ApiParam({
-    name: 'category',
-    enum: SourceCategoryEnum,
-    description: 'Source category',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of RSS sources in the specified category',
-    type: RssSourceListResponseDto,
-  })
+  @GetByCategoryEndpoint('RssSource', RssSourceListResponseDto, SourceCategoryEnum)
   async getByCategory(
     @Param('category', new ParseEnumPipe(SourceCategoryEnum))
     category: SourceCategoryEnum,
@@ -83,22 +70,10 @@ export class RssSourcesController extends BaseController<
    * Update reliability score for a source
    * PATCH /rss-sources/:id/reliability/:score
    */
-  @Patch(':id/reliability/:score')
-  @ApiOperation({ summary: 'Update reliability score for RSS source' })
-  @ApiParam({ name: 'id', type: 'number', description: 'RSS Source ID' })
-  @ApiParam({
-    name: 'score',
-    type: 'number',
-    description: 'Reliability score (0-100)',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Reliability score updated successfully',
-    type: RssSourceResponseDto,
-  })
+  @UpdateFieldEndpoint('RssSource', 'reliability', RssSourceResponseDto)
   async updateReliability(
     @Param('id', ParseIntPipe) id: number,
-    @Param('score', ParseIntPipe) score: number,
+    @Param('reliability', ParseIntPipe) score: number,
   ): Promise<RssSourceResponseDto> {
     await this.rssSourcesService.updateReliabilityScore(id, score);
     const source = await this.rssSourcesService.findOne(id);
