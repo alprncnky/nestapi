@@ -131,7 +131,7 @@ psql -U postgres -d insightapi
 - `news_tags` - Etiketler
 - `news_article_tags` - Haber-etiket ilişkileri
 - `stock_mentions` - Hisse senedi bahisleri
-- `extracted_entities` - NER ile çıkarılan varlıklar
+- `extracted_items` - NER ile çıkarılan varlıklar
 
 ### News Reliability Modülü
 - `news_reliability_tracking` - Haber güvenilirlik takibi

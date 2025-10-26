@@ -130,7 +130,7 @@ export const NewsArticleSchema = new EntitySchema<NewsArticle>({
     },
     extractedEntities: {
       type: 'one-to-many',
-      target: 'ExtractedEntity',
+      target: 'ExtractedItem',
       inverseSide: 'article',
     },
   },

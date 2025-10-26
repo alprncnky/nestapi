@@ -109,7 +109,7 @@ Beklenen tablolar:
  public | news_tags                   | table | postgres
  public | news_article_tags           | table | postgres
  public | stock_mentions              | table | postgres
- public | extracted_entities          | table | postgres
+ public | extracted_items             | table | postgres
  public | news_reliability_tracking   | table | postgres
  public | migrations                  | table | postgres
 ```

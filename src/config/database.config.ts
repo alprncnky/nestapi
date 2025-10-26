@@ -8,7 +8,7 @@ import { NewsArticleSchema } from '../modules/news/schemas/news-article.schema';
 import { NewsTagSchema } from '../modules/news/schemas/news-tag.schema';
 import { NewsArticleTagSchema } from '../modules/news/schemas/news-article-tag.schema';
 import { StockMentionSchema } from '../modules/news/schemas/stock-mention.schema';
-import { ExtractedEntitySchema } from '../modules/news/schemas/extracted-entity.schema';
+import { ExtractedItemSchema } from '../modules/news/schemas/extracted-item.schema';
 import { NewsReliabilityTrackingSchema } from '../modules/news-reliability/schemas/news-reliability-tracking.schema';
 
 /**
@@ -32,7 +32,7 @@ export default registerAs(
       NewsTagSchema,
       NewsArticleTagSchema,
       StockMentionSchema,
-      ExtractedEntitySchema,
+      ExtractedItemSchema,
       NewsReliabilityTrackingSchema,
     ],
     synchronize: false, // ⚠️ DISABLED - Use migrations instead!

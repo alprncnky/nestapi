@@ -279,14 +279,14 @@ export default dataSource;
 - `NewsTag` - Etiketler
 - `NewsArticleTag` - Many-to-many junction table
 - `StockMention` - Hisse senedi bahisleri
-- `ExtractedEntity` - NER sonuçları
+- `ExtractedItem` - NER sonuçları (extracted entities)
 
 **Schemas (5):**
 - `news-article.schema.ts`
 - `news-tag.schema.ts`
 - `news-article-tag.schema.ts`
 - `stock-mention.schema.ts`
-- `extracted-entity.schema.ts`
+- `extracted-item.schema.ts`
 
 ### News Reliability Modülü
 

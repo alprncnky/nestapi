@@ -286,7 +286,7 @@
 }
 ```
 
-### 6. `extracted_entities` (Çıkarılan Varlıklar - NER için)
+### 6. `extracted_items` (Çıkarılan Varlıklar - NER için)
 ```typescript
 {
   id: number (PK)
@@ -369,9 +369,9 @@ RSS Feedleri → Parse → `news_articles` tablosuna kaydet (status: PENDING)
 ```
 A. Named Entity Recognition (NER):
    - Şirket isimleri → stock_mentions
-   - Para birimleri ve tutarlar → extracted_entities
-   - Kişi isimleri, kurumlar → extracted_entities
-   - Tarih ve zaman → extracted_entities
+   - Para birimleri ve tutarlar → extracted_items
+   - Kişi isimleri, kurumlar → extracted_items
+   - Tarih ve zaman → extracted_items
 
 B. Sentiment Analysis:
    - Genel sentiment (pozitif/negatif/nötr)

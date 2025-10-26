@@ -3,11 +3,11 @@ import { NewsArticle } from './news-article.entity';
 import { EntityTypeEnum } from '../enums/entity-type.enum';
 
 /**
- * Extracted Entity entity - Named entities extracted from news content via NER
- * TypeORM schema is defined in ./extracted-entity.schema.ts
+ * Extracted Item entity - Named entities extracted from news content via NER
+ * TypeORM schema is defined in ./extracted-item.schema.ts
  */
 @AutoEntity()
-export class ExtractedEntity {
+export class ExtractedItem {
   id: number;
   articleId: number;
   article: NewsArticle;
@@ -18,3 +18,4 @@ export class ExtractedEntity {
   confidence: number;
   createdAt: Date;
 }
+

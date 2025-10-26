@@ -85,11 +85,12 @@ export class RssSource {
 **Sonra:** 20 satır  
 **Kazanım:** 65% azalma
 
-#### `extracted-entity.entity.ts` ✅
+#### `extracted-item.entity.ts` ✅ (renamed from extracted-entity)
 
 **Önce:** 53 satır  
 **Sonra:** 19 satır  
-**Kazanım:** 64% azalma
+**Kazanım:** 64% azalma  
+**Not:** Entity ismi "ExtractedItem" olarak değiştirildi (naming clarity)
 
 ---
 
@@ -116,7 +117,7 @@ export class RssSource {
 4. ✅ `schemas/news-tag.schema.ts` (50 satır)
 5. ✅ `schemas/news-article-tag.schema.ts` (60 satır)
 6. ✅ `schemas/stock-mention.schema.ts` (65 satır)
-7. ✅ `schemas/extracted-entity.schema.ts` (60 satır)
+7. ✅ `schemas/extracted-item.schema.ts` (60 satır)
 
 ### News Reliability Modülü
 
@@ -203,7 +204,7 @@ entities: [
 | NewsTag | 49 | 19 | **61%** |
 | NewsArticleTag | 53 | 18 | **66%** |
 | StockMention | 57 | 20 | **65%** |
-| ExtractedEntity | 53 | 19 | **64%** |
+| ExtractedItem | 53 | 19 | **64%** |
 | NewsReliabilityTracking | 70 | 28 | **60%** |
 | **TOPLAM** | **515** | **182** | **65%** |
 
@@ -351,13 +352,13 @@ src/modules/
 │   │   ├── news-tag.entity.ts
 │   │   ├── news-article-tag.entity.ts
 │   │   ├── stock-mention.entity.ts
-│   │   └── extracted-entity.entity.ts
+│   │   └── extracted-item.entity.ts
 │   ├── schemas/           # TypeORM schemas (yeni!)
 │   │   ├── news-article.schema.ts
 │   │   ├── news-tag.schema.ts
 │   │   ├── news-article-tag.schema.ts
 │   │   ├── stock-mention.schema.ts
-│   │   └── extracted-entity.schema.ts
+│   │   └── extracted-item.schema.ts
 │   └── enums/
 │
 └── news-reliability/

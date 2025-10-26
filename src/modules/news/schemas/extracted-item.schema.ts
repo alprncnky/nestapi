@@ -1,11 +1,11 @@
 import { EntitySchema } from 'typeorm';
-import { ExtractedEntity } from '../entities/extracted-entity.entity';
+import { ExtractedItem } from '../entities/extracted-item.entity';
 import { EntityTypeEnum } from '../enums/entity-type.enum';
 
-export const ExtractedEntitySchema = new EntitySchema<ExtractedEntity>({
-  name: 'ExtractedEntity',
-  target: ExtractedEntity,
-  tableName: 'extracted_entities',
+export const ExtractedItemSchema = new EntitySchema<ExtractedItem>({
+  name: 'ExtractedItem',
+  target: ExtractedItem,
+  tableName: 'extracted_items',
   columns: {
     id: {
       type: Number,
