@@ -34,8 +34,6 @@ rss-sources/
 │
 ├── contracts/                    # 🔷 CONTRACTS (.NET: YourProject.Contracts)
 │   ├── requests/                 # Input DTOs
-│   │   ├── create-rss-source.dto.ts
-│   │   ├── update-rss-source.dto.ts
 │   │   ├── save-rss-source.dto.ts
 │   │   └── mapping.ts            # Field validation mappings
 │   ├── responses/                # Output DTOs
@@ -183,7 +181,7 @@ export class RssSourceRepository extends BaseRepository<RssSource> {
 - ✅ Input/output transformation
 - ✅ Type-safe enum definitions
 
-**Request DTOs**: `SaveRssSourceDto`, `CreateRssSourceDto`, `UpdateRssSourceDto`
+**Request DTOs**: `SaveRssSourceDto` (.NET-style upsert pattern)
 
 **Response DTOs**: `RssSourceResponseDto`, `RssSourceListResponseDto`
 
