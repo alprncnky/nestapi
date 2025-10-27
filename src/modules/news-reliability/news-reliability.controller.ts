@@ -8,8 +8,7 @@ import {
 } from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import { NewsReliabilityTracking } from './entities/news-reliability-tracking.entity';
-import { CreateReliabilityTrackingDto } from './dto/create-reliability-tracking.dto';
-import { UpdateReliabilityTrackingDto } from './dto/update-reliability-tracking.dto';
+import { SaveReliabilityTrackingDto } from './dto/save-reliability-tracking.dto';
 import { ReliabilityTrackingResponseDto } from './responses/reliability-tracking-response.dto';
 import { ReliabilityTrackingListResponseDto } from './responses/reliability-tracking-list-response.dto';
 import { NewsReliabilityService } from './news-reliability.service';
@@ -21,8 +20,8 @@ import { NewsReliabilityService } from './news-reliability.service';
 @CrudController('reliability', 'ReliabilityTracking')
 export class NewsReliabilityController extends BaseController<
   NewsReliabilityTracking,
-  CreateReliabilityTrackingDto,
-  UpdateReliabilityTrackingDto,
+  SaveReliabilityTrackingDto,
+  SaveReliabilityTrackingDto,
   ReliabilityTrackingResponseDto,
   ReliabilityTrackingListResponseDto
 > {

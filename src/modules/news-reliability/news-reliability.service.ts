@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NewsReliabilityTracking } from './entities/news-reliability-tracking.entity';
-import { CreateReliabilityTrackingDto } from './dto/create-reliability-tracking.dto';
-import { UpdateReliabilityTrackingDto } from './dto/update-reliability-tracking.dto';
+import { SaveReliabilityTrackingDto } from './dto/save-reliability-tracking.dto';
 import { PredictionImpactEnum } from './enums/prediction-impact.enum';
 
 /**
@@ -18,29 +17,45 @@ export class NewsReliabilityService {
   ) {}
 
   /**
-   * Create a new reliability tracking prediction
-   * Alias for createPrediction to match IBaseService interface
+   * Save a reliability tracking record (create or update)
+   * .NET-style upsert method
    */
-  async create(
-    createDto: CreateReliabilityTrackingDto,
+  async save(
+    saveDto: SaveReliabilityTrackingDto,
   ): Promise<NewsReliabilityTracking> {
-    return await this.createPrediction(createDto);
+    const id = saveDto.id;
+
+    if (id) {
+      // Update existing tracking record
+      const tracking = await this.findOne(id);
+
+      Object.assign(tracking, {
+        ...saveDto,
+        updatedAt: new Date(),
+      });
+
+      return await this.reliabilityRepository.save(tracking);
+    } else {
+      // Create new tracking record
+      const tracking = new NewsReliabilityTracking();
+      Object.assign(tracking, {
+        ...saveDto,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      return await this.reliabilityRepository.save(tracking);
+    }
   }
 
   /**
    * Create a new reliability tracking prediction
+   * Alias for save() to maintain backward compatibility
    */
   async createPrediction(
-    createDto: CreateReliabilityTrackingDto,
+    createDto: SaveReliabilityTrackingDto,
   ): Promise<NewsReliabilityTracking> {
-    const tracking = new NewsReliabilityTracking();
-    Object.assign(tracking, {
-      ...createDto,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    return await this.reliabilityRepository.save(tracking);
+    return await this.save(createDto);
   }
 
   /**
@@ -127,23 +142,6 @@ export class NewsReliabilityService {
       evaluationDate: new Date(),
       updatedAt: new Date(),
     });
-  }
-
-  /**
-   * Update a tracking record
-   */
-  async update(
-    id: number,
-    updateDto: UpdateReliabilityTrackingDto,
-  ): Promise<NewsReliabilityTracking> {
-    const tracking = await this.findOne(id);
-
-    Object.assign(tracking, {
-      ...updateDto,
-      updatedAt: new Date(),
-    });
-
-    return await this.reliabilityRepository.save(tracking);
   }
 
   /**

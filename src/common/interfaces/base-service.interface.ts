@@ -1,11 +1,11 @@
 /**
  * Base service interface for standard CRUD operations
+ * Updated for .NET-style endpoints
  */
 export interface IBaseService<T> {
-  create(createDto: any): Promise<T>;
+  save(dto: any): Promise<T>;
   findAll(): Promise<T[]>;
   findOne(id: number): Promise<T>;
-  update(id: number, updateDto: any): Promise<T>;
   remove(id: number): Promise<void>;
 }
 

@@ -1,17 +1,16 @@
-import { NotFoundException, Param, ParseIntPipe, Body } from '@nestjs/common';
+import { NotFoundException, Param, ParseIntPipe, Body, Query } from '@nestjs/common';
 import { BaseRepository } from './base-repository';
 import { BaseListResponseDto } from './base-dto';
+import { CriteriaDto } from '../dto/criteria.dto';
 import { 
-  CreateEndpoint, 
-  GetAllEndpoint, 
-  GetByIdEndpoint, 
-  UpdateEndpoint, 
+  SaveEndpoint, 
+  GetEndpoint, 
+  GetListEndpoint, 
   DeleteEndpoint 
 } from '../decorators/endpoint.decorator';
 
 export interface IBaseService<T> {
-  create(createDto: any): Promise<T>;
-  update(id: number, updateDto: any): Promise<T>;
+  save(dto: any): Promise<T>;
   remove(id: number): Promise<void>;
 }
 
@@ -26,69 +25,53 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
   protected abstract getEntityName(): string;
 
   /**
-   * POST /create - Create a new entity
+   * POST /save - Save entity (create or update)
    * This is a default implementation that can be overridden in derived classes
+   * .NET-style endpoint
    */
-  @CreateEndpoint('Entity', Object)
-  async create(@Body() createDto: T2): Promise<T4> {
-    return this.createEntity(createDto);
+  @SaveEndpoint('Entity', Object)
+  async save(@Body() dto: T2 | T3): Promise<T4> {
+    return this.saveEntity(dto);
   }
 
   /**
-   * GET /list - Get all entities
+   * GET /get - Get entity by ID
    * This is a default implementation that can be overridden in derived classes
+   * .NET-style endpoint
    */
-  @GetAllEndpoint('Entity', Object)
-  async list(): Promise<T5> {
-    return this.findAllEntities();
+  @GetEndpoint('Entity', Object)
+  async get(@Query('id', ParseIntPipe) id: number): Promise<T4> {
+    return this.getEntity(id);
   }
 
   /**
-   * GET /:id - Get entity by ID
+   * POST /getlist - Get paginated list of entities
    * This is a default implementation that can be overridden in derived classes
+   * .NET-style endpoint
    */
-  @GetByIdEndpoint('Entity', Object)
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<T4> {
-    return this.findOneEntity(id);
+  @GetListEndpoint('Entity', Object)
+  async getList(@Body() criteriaDto: CriteriaDto): Promise<T5> {
+    return this.getListEntities(criteriaDto);
   }
 
   /**
-   * PATCH /:id - Update entity by ID
+   * DELETE /delete - Delete entity by ID
    * This is a default implementation that can be overridden in derived classes
-   */
-  @UpdateEndpoint('Entity', Object)
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: T3): Promise<T4> {
-    return this.updateEntity(id, updateDto);
-  }
-
-  /**
-   * DELETE /:id - Delete entity by ID
-   * This is a default implementation that can be overridden in derived classes
+   * .NET-style endpoint
    */
   @DeleteEndpoint('Entity')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
-    return this.removeEntity(id);
+  async delete(@Query('id', ParseIntPipe) id: number): Promise<{ message: string }> {
+    return this.deleteEntity(id);
   }
 
   // Protected helper methods for use in derived classes or custom business logic
-  protected async createEntity(createDto: T2): Promise<T4> {
-    const entity = await this.service.create(createDto);
+  protected async saveEntity(dto: T2 | T3): Promise<T4> {
+    const entity = await this.service.save(dto);
     const ResponseClass = this.getResponseClass();
     return new ResponseClass(entity);
   }
 
-  protected async findAllEntities(): Promise<T5> {
-    if (!this.repository) {
-      throw new Error('Repository not provided to BaseController');
-    }
-    const entities = await this.repository.findAll();
-    const ResponseClass = this.getResponseClass();
-    const ListResponseClass = this.getListResponseClass();
-    const responseItems = entities.map((entity) => new ResponseClass(entity));
-    return new ListResponseClass(responseItems, entities.length);
-  }
-
-  protected async findOneEntity(id: number): Promise<T4> {
+  protected async getEntity(id: number): Promise<T4> {
     if (!this.repository) {
       throw new Error('Repository not provided to BaseController');
     }
@@ -100,13 +83,18 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
     return new ResponseClass(entity);
   }
 
-  protected async updateEntity(id: number, updateDto: T3): Promise<T4> {
-    const entity = await this.service.update(id, updateDto);
+  protected async getListEntities(criteriaDto: CriteriaDto): Promise<T5> {
+    if (!this.repository) {
+      throw new Error('Repository not provided to BaseController');
+    }
+    const { entities, totalCount } = await this.repository.findWithPagination(criteriaDto);
     const ResponseClass = this.getResponseClass();
-    return new ResponseClass(entity);
+    const ListResponseClass = this.getListResponseClass();
+    const responseItems = entities.map((entity) => new ResponseClass(entity));
+    return new ListResponseClass(responseItems, totalCount);
   }
 
-  protected async removeEntity(id: number): Promise<{ message: string }> {
+  protected async deleteEntity(id: number): Promise<{ message: string }> {
     await this.service.remove(id);
     return { message: `${this.getEntityName()} with ID ${id} deleted successfully` };
   }

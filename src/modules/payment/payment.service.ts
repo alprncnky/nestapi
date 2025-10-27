@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Payment } from './entities/payment.entity';
 import { PaymentStatusType } from './enums/payment-status.enum';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { SavePaymentDto } from './dto/save-payment.dto';
 import { IBaseService } from '../../common/interfaces/base-service.interface';
 
 /**
@@ -18,29 +17,53 @@ export class PaymentService implements IBaseService<Payment> {
   private idCounter = 1;
 
   /**
-   * Create a new payment
+   * Save a payment (create or update)
+   * .NET-style upsert method
    */
-  async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
-    // 1. Validation
-    await this.validatePayment(createPaymentDto);
+  async save(savePaymentDto: SavePaymentDto): Promise<Payment> {
+    const id = savePaymentDto.id;
 
-    // 2. Generate transaction ID
-    const transactionId = this.generateTransactionId();
-    
-    // 3. Create payment entity - @AutoEntity allows object literal
-    const payment: Payment = {
-      id: this.idCounter++,
-      ...createPaymentDto,
-      status: PaymentStatusType.PENDING,
-      transactionId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    if (id) {
+      // Update existing payment
+      const payment = await this.findOne(id);
 
-    // 4. Save payment
-    this.payments.push(payment);
+      // Validate status transition if status is being updated
+      if (savePaymentDto.status) {
+        this.validateStatusTransition(payment.status, savePaymentDto.status);
+      }
 
-    return payment;
+      // Update payment
+      const updatedPayment: Payment = {
+        ...payment,
+        ...savePaymentDto,
+        status: savePaymentDto.status ?? payment.status,
+        updatedAt: new Date(),
+      };
+
+      // Replace in array
+      const index = this.payments.findIndex((p) => p.id === id);
+      this.payments[index] = updatedPayment;
+
+      return updatedPayment;
+    } else {
+      // Create new payment
+      await this.validatePayment(savePaymentDto);
+
+      const transactionId = this.generateTransactionId();
+      
+      const payment: Payment = {
+        id: this.idCounter++,
+        ...savePaymentDto,
+        status: savePaymentDto.status ?? PaymentStatusType.PENDING,
+        transactionId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      this.payments.push(payment);
+
+      return payment;
+    }
   }
 
   /**
@@ -75,35 +98,6 @@ export class PaymentService implements IBaseService<Payment> {
    */
   async findByCustomerEmail(email: string): Promise<Payment[]> {
     return this.payments.filter((p) => p.customerEmail === email);
-  }
-
-  /**
-   * Update a payment
-   */
-  async update(id: number, updatePaymentDto: UpdatePaymentDto): Promise<Payment> {
-    const payment = await this.findOne(id);
-
-    // Validate status transition if status is being updated
-    if (updatePaymentDto.status) {
-      this.validateStatusTransition(payment.status, updatePaymentDto.status as PaymentStatusType);
-    }
-
-    // Prepare update data with proper type casting
-    const { status, ...otherUpdates } = updatePaymentDto;
-    
-    // Update payment - @AutoEntity allows object literal
-    const updatedPayment: Payment = {
-      ...payment,
-      ...otherUpdates,
-      ...(status && { status: status as PaymentStatusType }),
-      updatedAt: new Date(),
-    };
-
-    // Replace in array
-    const index = this.payments.findIndex((p) => p.id === id);
-    this.payments[index] = updatedPayment;
-
-    return updatedPayment;
   }
 
   /**
@@ -171,7 +165,7 @@ export class PaymentService implements IBaseService<Payment> {
   /**
    * Private validation methods
    */
-  private async validatePayment(dto: CreatePaymentDto): Promise<void> {
+  private async validatePayment(dto: SavePaymentDto): Promise<void> {
     // Validate amount
     if (dto.amount <= 0) {
       throw new BadRequestException('Payment amount must be positive');

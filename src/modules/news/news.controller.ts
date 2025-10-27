@@ -8,8 +8,7 @@ import {
 } from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import { NewsArticle } from './entities/news-article.entity';
-import { CreateNewsArticleDto } from './dto/create-news-article.dto';
-import { UpdateNewsArticleDto } from './dto/update-news-article.dto';
+import { SaveNewsArticleDto } from './dto/save-news-article.dto';
 import { NewsArticleResponseDto } from './responses/news-article-response.dto';
 import { NewsArticleListResponseDto } from './responses/news-article-list-response.dto';
 import { NewsTagListResponseDto } from './responses/news-tag-list-response.dto';
@@ -33,8 +32,8 @@ import { NewsStatusEnum } from './enums/news-status.enum';
 @CrudController('news', 'NewsArticle')
 export class NewsController extends BaseController<
   NewsArticle,
-  CreateNewsArticleDto,
-  UpdateNewsArticleDto,
+  SaveNewsArticleDto,
+  SaveNewsArticleDto,
   NewsArticleResponseDto,
   NewsArticleListResponseDto
 > {

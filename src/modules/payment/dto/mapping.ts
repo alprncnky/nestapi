@@ -21,3 +21,13 @@ export const UpdatePaymentMapping = {
   description: () => StringField('Payment description', 'Payment for order #1234', false),
 };
 
+export const SavePaymentMapping = {
+  id: () => NumberField('Payment ID (optional, for updates)', 1, false),
+  amount: () => NumberField('Payment amount', 99.99, true, 0.01),
+  currency: () => StringField('Payment currency', 'USD', true, 3, 3),
+  customerEmail: () => EmailField('Customer email address', 'customer@example.com', true),
+  customerName: () => StringField('Customer full name', 'John Doe', true),
+  description: () => StringField('Payment description', 'Payment for order #1234', false),
+  status: () => StringField('Payment status', 'completed', false),
+};
+

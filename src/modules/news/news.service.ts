@@ -6,8 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, MoreThan } from 'typeorm';
 import { NewsArticle } from './entities/news-article.entity';
-import { CreateNewsArticleDto } from './dto/create-news-article.dto';
-import { UpdateNewsArticleDto } from './dto/update-news-article.dto';
+import { SaveNewsArticleDto } from './dto/save-news-article.dto';
 import { NewsCategoryEnum } from './enums/news-category.enum';
 import { ImpactLevelEnum } from './enums/impact-level.enum';
 import { NewsStatusEnum } from './enums/news-status.enum';
@@ -24,25 +23,46 @@ export class NewsService {
   ) {}
 
   /**
-   * Create a new news article
+   * Save a news article (create or update)
+   * .NET-style upsert method
    */
-  async create(createNewsArticleDto: CreateNewsArticleDto): Promise<NewsArticle> {
-    // 1. Validation - Check for duplicate URL
-    await this.validateUniqueUrl(createNewsArticleDto.url);
-    await this.validateUniqueGuid(createNewsArticleDto.guid);
+  async save(saveNewsArticleDto: SaveNewsArticleDto): Promise<NewsArticle> {
+    const id = saveNewsArticleDto.id;
 
-    // 2. Business logic - Create entity
-    const article = new NewsArticle();
-    Object.assign(article, {
-      ...createNewsArticleDto,
-      status: NewsStatusEnum.PENDING,
-      scrapedAt: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    if (id) {
+      // Update existing article
+      const article = await this.findOne(id);
 
-    // 3. Repository operation
-    return await this.newsRepository.save(article);
+      // Validate URL and GUID uniqueness if changed
+      if (saveNewsArticleDto.url && saveNewsArticleDto.url !== article.url) {
+        await this.validateUniqueUrl(saveNewsArticleDto.url, id);
+      }
+      if (saveNewsArticleDto.guid && saveNewsArticleDto.guid !== article.guid) {
+        await this.validateUniqueGuid(saveNewsArticleDto.guid, id);
+      }
+
+      Object.assign(article, {
+        ...saveNewsArticleDto,
+        updatedAt: new Date(),
+      });
+
+      return await this.newsRepository.save(article);
+    } else {
+      // Create new article
+      await this.validateUniqueUrl(saveNewsArticleDto.url);
+      await this.validateUniqueGuid(saveNewsArticleDto.guid);
+
+      const article = new NewsArticle();
+      Object.assign(article, {
+        ...saveNewsArticleDto,
+        status: saveNewsArticleDto.status ?? NewsStatusEnum.PENDING,
+        scrapedAt: saveNewsArticleDto.scrapedAt ?? new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      return await this.newsRepository.save(article);
+    }
   }
 
   /**
@@ -105,26 +125,6 @@ export class NewsService {
       order: { scrapedAt: 'DESC' },
       take: 100,
     });
-  }
-
-  /**
-   * Update a news article
-   */
-  async update(
-    id: number,
-    updateNewsArticleDto: UpdateNewsArticleDto,
-  ): Promise<NewsArticle> {
-    // 1. Check if article exists
-    const article = await this.findOne(id);
-
-    // 2. Update entity
-    Object.assign(article, {
-      ...updateNewsArticleDto,
-      updatedAt: new Date(),
-    });
-
-    // 3. Save
-    return await this.newsRepository.save(article);
   }
 
   /**
@@ -207,12 +207,12 @@ export class NewsService {
   /**
    * Private: Validate unique URL
    */
-  private async validateUniqueUrl(url: string): Promise<void> {
+  private async validateUniqueUrl(url: string, excludeId?: number): Promise<void> {
     const existingArticle = await this.newsRepository.findOne({
       where: { url },
     });
 
-    if (existingArticle) {
+    if (existingArticle && existingArticle.id !== excludeId) {
       throw new ConflictException(`Article with URL "${url}" already exists`);
     }
   }
@@ -220,12 +220,12 @@ export class NewsService {
   /**
    * Private: Validate unique GUID
    */
-  private async validateUniqueGuid(guid: string): Promise<void> {
+  private async validateUniqueGuid(guid: string, excludeId?: number): Promise<void> {
     const existingArticle = await this.newsRepository.findOne({
       where: { guid },
     });
 
-    if (existingArticle) {
+    if (existingArticle && existingArticle.id !== excludeId) {
       throw new ConflictException(`Article with GUID "${guid}" already exists`);
     }
   }

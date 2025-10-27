@@ -3,18 +3,12 @@ import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import {
-  CreateEndpoint,
-  GetAllEndpoint,
-  GetByIdEndpoint,
-  UpdateEndpoint,
-  DeleteEndpoint,
   GetByStatusEndpoint,
 } from '../../common/decorators/endpoint.decorator';
 import { PaymentService } from './payment.service';
 import { Payment } from './entities/payment.entity';
 import { PaymentStatusType } from './enums/payment-status.enum';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { SavePaymentDto } from './dto/save-payment.dto';
 import { PaymentResponseDto } from './responses/payment-response.dto';
 import { PaymentListResponseDto } from './responses/payment-list-response.dto';
 
@@ -27,8 +21,8 @@ import { PaymentListResponseDto } from './responses/payment-list-response.dto';
 @CrudController('payments', 'Payment')
 export class PaymentController extends BaseController<
   Payment,
-  CreatePaymentDto,
-  UpdatePaymentDto,
+  SavePaymentDto,
+  SavePaymentDto,
   PaymentResponseDto,
   PaymentListResponseDto
 > {
@@ -42,38 +36,6 @@ export class PaymentController extends BaseController<
   protected getResponseClass = () => PaymentResponseDto;
   protected getListResponseClass = () => PaymentListResponseDto;
   protected getEntityName = () => 'Payment';
-
-  /**
-   * Standard CRUD endpoints using base class methods
-   */
-
-  @CreateEndpoint('Payment', PaymentResponseDto)
-  create(@Body() createPaymentDto: CreatePaymentDto) {
-    return this.createEntity(createPaymentDto);
-  }
-
-  @GetAllEndpoint('Payment', PaymentListResponseDto)
-  @ApiQuery({ name: 'status', required: false, enum: PaymentStatusType, description: 'Filter by payment status' })
-  @ApiQuery({ name: 'email', required: false, type: 'string', description: 'Filter by customer email' })
-  async findAll(@Query('status') status?: PaymentStatusType, @Query('email') email?: string) {
-    const payments = status ? await this.paymentService.findByStatus(status) : email ? await this.paymentService.findByCustomerEmail(email) : await this.paymentService.findAll();
-    return new PaymentListResponseDto(payments.map((payment) => new PaymentResponseDto(payment)), payments.length);
-  }
-
-  @GetByIdEndpoint('Payment', PaymentResponseDto)
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.findOneEntity(id);
-  }
-
-  @UpdateEndpoint('Payment', PaymentResponseDto)
-  update(@Param('id', ParseIntPipe) id: number, @Body() updatePaymentDto: UpdatePaymentDto) {
-    return this.updateEntity(id, updatePaymentDto);
-  }
-
-  @DeleteEndpoint('Payment')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.removeEntity(id);
-  }
 
   /**
    * Custom business endpoints

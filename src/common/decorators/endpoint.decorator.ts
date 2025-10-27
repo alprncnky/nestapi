@@ -2,15 +2,16 @@ import { applyDecorators, Post, Get, Patch, Delete, Type } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
 /**
- * Decorator for CREATE endpoints (POST /create)
+ * Decorator for SAVE endpoints (POST /save) - .NET style upsert
+ * Handles both create and update operations
  */
-export function CreateEndpoint(entityName: string, responseType: any) {
+export function SaveEndpoint(entityName: string, responseType: any) {
   return applyDecorators(
-    Post('create'),
-    ApiOperation({ summary: `Create a new ${entityName}` }),
+    Post('save'),
+    ApiOperation({ summary: `Save ${entityName} (create or update)` }),
     ApiResponse({
-      status: 201,
-      description: `${entityName} created successfully`,
+      status: 200,
+      description: `${entityName} saved successfully`,
       type: responseType,
     }),
     ApiResponse({ status: 400, description: 'Bad Request' }),
@@ -18,30 +19,13 @@ export function CreateEndpoint(entityName: string, responseType: any) {
 }
 
 /**
- * Decorator for GET ALL endpoints (GET /list)
+ * Decorator for GET endpoints (GET /get) - .NET style
+ * Get entity by ID via query parameter
  */
-export function GetAllEndpoint(entityName: string, responseType: any, queryParams?: string[]) {
-  const decorators = [
-    Get('list'),
-    ApiOperation({ summary: `Get all ${entityName}s` }),
-    ApiResponse({
-      status: 200,
-      description: `List of ${entityName}s`,
-      type: responseType,
-    }),
-  ];
-
-  return applyDecorators(...decorators);
-}
-
-/**
- * Decorator for GET BY ID endpoints (GET /:id)
- */
-export function GetByIdEndpoint(entityName: string, responseType: any) {
+export function GetEndpoint(entityName: string, responseType: any) {
   return applyDecorators(
-    Get(':id'),
+    Get('get'),
     ApiOperation({ summary: `Get ${entityName} by ID` }),
-    ApiParam({ name: 'id', type: 'number', description: `${entityName} ID` }),
     ApiResponse({
       status: 200,
       description: `${entityName} found`,
@@ -52,48 +36,31 @@ export function GetByIdEndpoint(entityName: string, responseType: any) {
 }
 
 /**
- * Decorator for UPDATE endpoints (PATCH /:id)
+ * Decorator for GET LIST endpoints (POST /getlist) - .NET style
+ * Get paginated list with sorting
  */
-export function UpdateEndpoint(entityName: string, responseType: any) {
+export function GetListEndpoint(entityName: string, responseType: any) {
   return applyDecorators(
-    Patch(':id'),
-    ApiOperation({ summary: `Update ${entityName} by ID` }),
-    ApiParam({ name: 'id', type: 'number', description: `${entityName} ID` }),
+    Post('getlist'),
+    ApiOperation({ summary: `Get paginated list of ${entityName}s` }),
     ApiResponse({
       status: 200,
-      description: `${entityName} updated successfully`,
+      description: `List of ${entityName}s with pagination`,
       type: responseType,
     }),
-    ApiResponse({ status: 404, description: `${entityName} not found` }),
   );
 }
 
 /**
- * Decorator for DELETE endpoints (DELETE /:id)
+ * Decorator for DELETE endpoints (DELETE /delete) - .NET style
+ * Delete entity by ID via query parameter
  */
 export function DeleteEndpoint(entityName: string) {
   return applyDecorators(
-    Delete(':id'),
+    Delete('delete'),
     ApiOperation({ summary: `Delete ${entityName} by ID` }),
-    ApiParam({ name: 'id', type: 'number', description: `${entityName} ID` }),
     ApiResponse({ status: 200, description: `${entityName} deleted successfully` }),
     ApiResponse({ status: 404, description: `${entityName} not found` }),
-  );
-}
-
-/**
- * Decorator for SAVE endpoints (POST /save) - custom business operation
- */
-export function SaveEndpoint(entityName: string, responseType: any) {
-  return applyDecorators(
-    Post('save'),
-    ApiOperation({ summary: `Save ${entityName} with additional business logic` }),
-    ApiResponse({
-      status: 201,
-      description: `${entityName} saved successfully`,
-      type: responseType,
-    }),
-    ApiResponse({ status: 400, description: 'Bad Request' }),
   );
 }
 

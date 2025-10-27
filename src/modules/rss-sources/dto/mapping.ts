@@ -130,3 +130,72 @@ export const UpdateRssSourceMapping = {
     ),
 };
 
+export const SaveRssSourceMapping = {
+  id: () =>
+    NumberField(
+      'RSS source ID (optional, for updates)',
+      1,
+      false,
+    ),
+  name: () =>
+    StringField(
+      'RSS source name',
+      'Bloomberg HT',
+      true,
+      3,
+      255,
+    ),
+  url: () =>
+    StringField(
+      'RSS feed URL',
+      'https://www.bloomberght.com/rss',
+      true,
+      10,
+      500,
+    ),
+  feedType: () =>
+    EnumField(
+      FeedTypeEnum,
+      'RSS feed type',
+      FeedTypeEnum.RSS2,
+      true,
+    ),
+  category: () =>
+    EnumField(
+      SourceCategoryEnum,
+      'Source category',
+      SourceCategoryEnum.COMPANY_NEWS,
+      true,
+    ),
+  country: () =>
+    StringField(
+      'Country code (ISO 3166-1 alpha-2)',
+      'TR',
+      true,
+      2,
+      10,
+    ),
+  fetchInterval: () =>
+    NumberField(
+      'Fetch interval in minutes',
+      60,
+      true,
+      5,
+      1440,
+    ),
+  isActive: () =>
+    BooleanField(
+      'Is source active',
+      true,
+      false,
+    ),
+  reliabilityScore: () =>
+    NumberField(
+      'Source reliability score (0-100)',
+      75.5,
+      false,
+      0,
+      100,
+    ),
+};
+

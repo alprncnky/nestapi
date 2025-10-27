@@ -65,6 +65,41 @@ export const UpdateNewsArticleMapping = {
     EnumField(NewsStatusEnum, 'Processing status', NewsStatusEnum.PROCESSED, false),
 };
 
+export const SaveNewsArticleMapping = {
+  id: () =>
+    NumberField('News article ID (optional, for updates)', 1, false),
+  sourceId: () =>
+    NumberField('RSS source ID', 1, true, 1),
+  title: () =>
+    StringField('News article title', 'Breaking: Market Update', true, 3, 500),
+  url: () =>
+    StringField('Article URL', 'https://example.com/news/123', true, 10, 500),
+  guid: () =>
+    StringField('Article GUID', 'unique-guid-123', true, 3, 255),
+  summary: () =>
+    StringField('Article summary', 'Brief summary of the article', false, 10, 5000),
+  content: () =>
+    StringField('Full article content', 'Full content...', false, 10, 50000),
+  contentPlain: () =>
+    StringField('Plain text content', 'Plain text content without HTML', false, 10, 50000),
+  publishedAt: () =>
+    StringField('Publication date', '2024-01-01T00:00:00Z', true),
+  scrapedAt: () =>
+    StringField('Scrape date', '2024-01-01T00:00:00Z', false),
+  imageUrl: () =>
+    StringField('Image URL', 'https://example.com/image.jpg', false, 10, 500),
+  status: () =>
+    EnumField(NewsStatusEnum, 'Processing status', NewsStatusEnum.PENDING, false),
+  isDuplicate: () =>
+    BooleanField('Is duplicate', false, false),
+  category: () =>
+    EnumField(NewsCategoryEnum, 'News category', NewsCategoryEnum.COMPANY_NEWS, false),
+  sentimentScore: () =>
+    NumberField('Sentiment score (-1 to 1)', 0.5, false, -1, 1),
+  impactLevel: () =>
+    EnumField(ImpactLevelEnum, 'Impact level', ImpactLevelEnum.MEDIUM, false),
+};
+
 // News Tag Mappings
 export const CreateNewsTagMapping = {
   name: () =>

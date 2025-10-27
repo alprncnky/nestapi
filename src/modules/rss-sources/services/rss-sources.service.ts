@@ -1,39 +1,43 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { RssSource } from '../entities/rss-source.entity';
-import { CreateRssSourceDto } from '../dto/create-rss-source.dto';
-import { UpdateRssSourceDto } from '../dto/update-rss-source.dto';
+import { SaveRssSourceDto } from '../dto/save-rss-source.dto';
 import { RssSourceRepository } from '../repositories/rss-source.repository';
 
 @Injectable()
 export class RssSourcesService {
   constructor(private readonly rssSourceRepository: RssSourceRepository) {}
 
-  async create(createRssSourceDto: CreateRssSourceDto): Promise<RssSource> {
-    await this.validateUniqueUrl(createRssSourceDto.url);
+  async save(saveRssSourceDto: SaveRssSourceDto): Promise<RssSource> {
+    const id = saveRssSourceDto.id;
 
-    const rssSource = new RssSource();
-    Object.assign(rssSource, {
-      ...createRssSourceDto,
-      reliabilityScore: 50,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    if (id) {
+      // Update existing RSS source
+      const source = await this.rssSourceRepository.findById(id);
+      if (!source) {
+        throw new NotFoundException(`RSS Source with ID ${id} not found`);
+      }
 
-    return await this.rssSourceRepository.save(rssSource);
-  }
+      // Validate URL uniqueness if changed
+      if (saveRssSourceDto.url && saveRssSourceDto.url !== source.url) {
+        await this.validateUniqueUrl(saveRssSourceDto.url, id);
+      }
 
-  async update(id: number, updateRssSourceDto: UpdateRssSourceDto): Promise<RssSource> {
-    const source = await this.rssSourceRepository.findById(id);
-    if (!source) {
-      throw new NotFoundException(`RSS Source with ID ${id} not found`);
+      Object.assign(source, { ...saveRssSourceDto, updatedAt: new Date() });
+      return await this.rssSourceRepository.save(source);
+    } else {
+      // Create new RSS source
+      await this.validateUniqueUrl(saveRssSourceDto.url);
+
+      const rssSource = new RssSource();
+      Object.assign(rssSource, {
+        ...saveRssSourceDto,
+        reliabilityScore: saveRssSourceDto.reliabilityScore ?? 50,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      return await this.rssSourceRepository.save(rssSource);
     }
-
-    if (updateRssSourceDto.url && updateRssSourceDto.url !== source.url) {
-      await this.validateUniqueUrl(updateRssSourceDto.url);
-    }
-
-    Object.assign(source, { ...updateRssSourceDto, updatedAt: new Date() });
-    return await this.rssSourceRepository.save(source);
   }
 
   async updateLastFetchTime(id: number): Promise<void> {
@@ -55,9 +59,9 @@ export class RssSourcesService {
     await this.rssSourceRepository.remove(source);
   }
 
-  private async validateUniqueUrl(url: string): Promise<void> {
+  private async validateUniqueUrl(url: string, excludeId?: number): Promise<void> {
     const existingSource = await this.rssSourceRepository.findByUrl(url);
-    if (existingSource) {
+    if (existingSource && existingSource.id !== excludeId) {
       throw new ConflictException(`RSS source with URL "${url}" already exists`);
     }
   }

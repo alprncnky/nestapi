@@ -3,8 +3,7 @@ import { CrudController } from '../../../common/decorators/crud-controller.decor
 import { GetActiveEndpoint, GetByCategoryEndpoint, UpdateFieldEndpoint } from '../../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../../common/base/base-controller';
 import { RssSource } from '../entities/rss-source.entity';
-import { CreateRssSourceDto } from '../dto/create-rss-source.dto';
-import { UpdateRssSourceDto } from '../dto/update-rss-source.dto';
+import { SaveRssSourceDto } from '../dto/save-rss-source.dto';
 import { RssSourceResponseDto } from '../responses/rss-source-response.dto';
 import { RssSourceListResponseDto } from '../responses/rss-source-list-response.dto';
 import { RssSourcesService } from '../services/rss-sources.service';
@@ -12,7 +11,7 @@ import { RssSourceRepository } from '../repositories/rss-source.repository';
 import { SourceCategoryEnum } from '../enums/source-category.enum';
 
 @CrudController('rss-sources', 'RssSource')
-export class RssSourcesController extends BaseController<RssSource, CreateRssSourceDto, UpdateRssSourceDto, RssSourceResponseDto, RssSourceListResponseDto> {
+export class RssSourcesController extends BaseController<RssSource, SaveRssSourceDto, SaveRssSourceDto, RssSourceResponseDto, RssSourceListResponseDto> {
   constructor(
     private readonly rssSourcesService: RssSourcesService,
     private readonly rssSourceRepository: RssSourceRepository,

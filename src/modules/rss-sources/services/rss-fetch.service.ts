@@ -57,7 +57,7 @@ export class RssFetchService {
   }
 
   private async createArticleFromFeedItem(sourceId: number, item: ParsedItem): Promise<void> {
-    await this.newsService.create({
+    await this.newsService.save({
       sourceId,
       title: item.title,
       url: item.link,

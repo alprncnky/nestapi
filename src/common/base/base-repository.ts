@@ -1,4 +1,5 @@
 import { Repository, FindOptionsWhere, FindManyOptions, ObjectLiteral } from 'typeorm';
+import { CriteriaDto } from '../dto/criteria.dto';
 
 export abstract class BaseRepository<T extends ObjectLiteral> {
   constructor(protected readonly repository: Repository<T>) {}
@@ -46,6 +47,21 @@ export abstract class BaseRepository<T extends ObjectLiteral> {
   async exists(where: FindOptionsWhere<T>): Promise<boolean> {
     const count = await this.repository.count({ where });
     return count > 0;
+  }
+
+  async findWithPagination(criteriaDto: CriteriaDto): Promise<{ entities: T[]; totalCount: number }> {
+    const skip = criteriaDto.page * criteriaDto.pageSize;
+    const order = criteriaDto.sortField 
+      ? { [criteriaDto.sortField]: criteriaDto.sortType || 'ASC' } 
+      : undefined;
+    
+    const [entities, totalCount] = await this.repository.findAndCount({
+      skip,
+      take: criteriaDto.pageSize,
+      order: order as any,
+    });
+    
+    return { entities, totalCount };
   }
 }
 
