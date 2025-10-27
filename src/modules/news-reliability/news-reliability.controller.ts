@@ -1,12 +1,6 @@
-import { Param, ParseIntPipe, Body } from '@nestjs/common';
+import { Body } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
-import {
-  GetPendingEndpoint,
-  GetRelatedEndpoint,
-  GetByFieldEndpoint,
-  GetReportEndpoint,
-  SaveEndpoint,
-} from '../../common/decorators/endpoint.decorator';
+import { SaveEndpoint } from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import { NewsReliabilityTracking } from './entities/news-reliability-tracking.entity';
 import { SaveReliabilityTrackingDto } from './dto/save-reliability-tracking.dto';
@@ -38,49 +32,9 @@ export class NewsReliabilityController extends BaseController<
   protected getEntityName = () => 'ReliabilityTracking';
   protected getRequestClass = () => SaveReliabilityTrackingDto;
 
-  // Override to apply Swagger decorators (necessary for API documentation)
   @SaveEndpoint(SaveReliabilityTrackingDto, ReliabilityTrackingResponseDto)
   async save(@Body() dto: SaveReliabilityTrackingDto): Promise<ReliabilityTrackingResponseDto> {
     return this.saveEntity(dto);
-  }
-
-  /**
-   * Get pending predictions (not yet evaluated)
-   * GET /reliability/pending
-   */
-  @GetPendingEndpoint(ReliabilityTrackingListResponseDto)
-  async getPendingPredictions(): Promise<ReliabilityTrackingListResponseDto> {
-    const predictions = await this.newsReliabilityService.getPendingPredictions();
-    return new ReliabilityTrackingListResponseDto(predictions.map((p) => new ReliabilityTrackingResponseDto(p)), predictions.length);
-  }
-
-  /**
-   * Get reliability tracking by article
-   * GET /reliability/article/:articleId
-   */
-  @GetByFieldEndpoint('article', ReliabilityTrackingListResponseDto)
-  async getByArticle(@Param('article', ParseIntPipe) articleId: number): Promise<ReliabilityTrackingListResponseDto> {
-    const records = await this.newsReliabilityService.findByArticle(articleId);
-    return new ReliabilityTrackingListResponseDto(records.map((r) => new ReliabilityTrackingResponseDto(r)), records.length);
-  }
-
-  /**
-   * Get reliability tracking by stock
-   * GET /reliability/stock/:symbol
-   */
-  @GetByFieldEndpoint('stock', ReliabilityTrackingListResponseDto)
-  async getByStock(@Param('stock') symbol: string): Promise<ReliabilityTrackingListResponseDto> {
-    const records = await this.newsReliabilityService.findByStock(symbol);
-    return new ReliabilityTrackingListResponseDto(records.map((r) => new ReliabilityTrackingResponseDto(r)), records.length);
-  }
-
-  /**
-   * Get accuracy report for a source
-   * GET /reliability/source/:sourceId/accuracy
-   */
-  @GetReportEndpoint('accuracy', true)
-  async getSourceAccuracy(@Param('id', ParseIntPipe) sourceId: number): Promise<{ totalPredictions: number; correctDirectionPredictions: number; averageAccuracy: number }> {
-    return await this.newsReliabilityService.getSourceAccuracyReport(sourceId);
   }
 }
 

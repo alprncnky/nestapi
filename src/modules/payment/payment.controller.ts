@@ -1,14 +1,9 @@
-import { Body, Param, ParseIntPipe, Query, Post } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Body } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
 import { BaseController } from '../../common/base/base-controller';
-import {
-  GetByStatusEndpoint,
-  SaveEndpoint,
-} from '../../common/decorators/endpoint.decorator';
+import { SaveEndpoint } from '../../common/decorators/endpoint.decorator';
 import { PaymentService } from './payment.service';
 import { Payment } from './entities/payment.entity';
-import { PaymentStatusType } from './enums/payment-status.enum';
 import { SavePaymentDto } from './dto/save-payment.dto';
 import { PaymentResponseDto } from './responses/payment-response.dto';
 import { PaymentListResponseDto } from './responses/payment-list-response.dto';
@@ -39,40 +34,9 @@ export class PaymentController extends BaseController<
   protected getEntityName = () => 'Payment';
   protected getRequestClass = () => SavePaymentDto;
 
-  // Override to apply Swagger decorators (necessary for API documentation)
   @SaveEndpoint(SavePaymentDto, PaymentResponseDto)
   async save(@Body() dto: SavePaymentDto): Promise<PaymentResponseDto> {
     return this.saveEntity(dto);
-  }
-
-  /**
-   * Custom business endpoints
-   */
-
-  @Post(':id/process')
-  @ApiOperation({ summary: 'Process a pending payment' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Payment ID' })
-  @ApiResponse({ status: 200, description: 'Payment processed successfully', type: PaymentResponseDto })
-  @ApiResponse({ status: 400, description: 'Payment cannot be processed' })
-  @ApiResponse({ status: 404, description: 'Payment not found' })
-  async processPayment(@Param('id', ParseIntPipe) id: number): Promise<PaymentResponseDto> {
-    return new PaymentResponseDto(await this.paymentService.processPayment(id));
-  }
-
-  @Post(':id/refund')
-  @ApiOperation({ summary: 'Refund a completed payment' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Payment ID' })
-  @ApiResponse({ status: 200, description: 'Payment refunded successfully', type: PaymentResponseDto })
-  @ApiResponse({ status: 400, description: 'Payment cannot be refunded' })
-  @ApiResponse({ status: 404, description: 'Payment not found' })
-  async refundPayment(@Param('id', ParseIntPipe) id: number): Promise<PaymentResponseDto> {
-    return new PaymentResponseDto(await this.paymentService.refundPayment(id));
-  }
-
-  @GetByStatusEndpoint(PaymentListResponseDto, PaymentStatusType)
-  async findByStatus(@Param('status') status: PaymentStatusType): Promise<PaymentListResponseDto> {
-    const payments = await this.paymentService.findByStatus(status);
-    return new PaymentListResponseDto(payments.map((payment) => new PaymentResponseDto(payment)), payments.length);
   }
 }
 
