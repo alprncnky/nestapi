@@ -1,10 +1,7 @@
 import { BaseListResponseDto } from '../../../../common/base/base-dto';
+import { AutoListResponse } from '../../../../common/decorators/auto-response.decorator';
 import { RssSourceResponseDto } from './rss-source-response.dto';
 
-/**
- * Response DTO for list of RSS Sources
- * Extends BaseListResponseDto with RssSourceResponseDto type
- * Automatically provides items[] and total count
- */
+@AutoListResponse(RssSourceResponseDto)
 export class RssSourceListResponseDto extends BaseListResponseDto<RssSourceResponseDto> {}
 
