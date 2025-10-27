@@ -2,10 +2,6 @@ import { AutoEntity } from '../../../../common/decorators/auto-entity.decorator'
 import { NewsArticle } from './news-article.entity';
 import { SentimentEnum } from '../../contracts/enums/sentiment.enum';
 
-/**
- * Stock Mention entity - Tracks stock symbol mentions in news articles
- * TypeORM schema is defined in ./stock-mention.schema.ts
- */
 @AutoEntity()
 export class StockMention {
   id: number;

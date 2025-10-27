@@ -1,10 +1,6 @@
 import { AutoEntity } from '../../../../common/decorators/auto-entity.decorator';
 import { TagTypeEnum } from '../../contracts/enums/tag-type.enum';
 
-/**
- * News Tag entity - Tags for categorizing news
- * TypeORM schema is defined in ./news-tag.schema.ts
- */
 @AutoEntity()
 export class NewsTag {
   id: number;
@@ -14,7 +10,5 @@ export class NewsTag {
   usageCount: number;
   createdAt: Date;
   updatedAt: Date;
-  
-  // Relations
   articleTags: any[];
 }

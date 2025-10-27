@@ -2,10 +2,6 @@ import { AutoEntity } from '../../../../common/decorators/auto-entity.decorator'
 import { NewsArticle } from './news-article.entity';
 import { EntityTypeEnum } from '../../contracts/enums/entity-type.enum';
 
-/**
- * Extracted Item entity - Named entities extracted from news content via NER
- * TypeORM schema is defined in ./extracted-item.schema.ts
- */
 @AutoEntity()
 export class ExtractedItem {
   id: number;
