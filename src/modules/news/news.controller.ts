@@ -5,6 +5,7 @@ import {
   GetByStatusEndpoint,
   GetRelatedEndpoint,
   UpdateFieldEndpoint,
+  SaveEndpoint,
 } from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import { NewsArticle } from './entities/news-article.entity';
@@ -50,6 +51,13 @@ export class NewsController extends BaseController<
   protected getResponseClass = () => NewsArticleResponseDto;
   protected getListResponseClass = () => NewsArticleListResponseDto;
   protected getEntityName = () => 'NewsArticle';
+  protected getRequestClass = () => SaveNewsArticleDto;
+
+  // Override to apply Swagger decorators (necessary for API documentation)
+  @SaveEndpoint('NewsArticle', SaveNewsArticleDto, NewsArticleResponseDto)
+  async save(@Body() dto: SaveNewsArticleDto): Promise<NewsArticleResponseDto> {
+    return this.saveEntity(dto);
+  }
 
   /**
    * Get news articles by category

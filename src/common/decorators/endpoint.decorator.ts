@@ -1,14 +1,15 @@
 import { applyDecorators, Post, Get, Patch, Delete, Type } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 
 /**
  * Decorator for SAVE endpoints (POST /save) - .NET style upsert
  * Handles both create and update operations
  */
-export function SaveEndpoint(entityName: string, responseType: any) {
+export function SaveEndpoint(entityName: string, requestType: any, responseType: any) {
   return applyDecorators(
     Post('save'),
     ApiOperation({ summary: `Save ${entityName} (create or update)` }),
+    ApiBody({ type: requestType }),
     ApiResponse({
       status: 200,
       description: `${entityName} saved successfully`,
@@ -39,10 +40,11 @@ export function GetEndpoint(entityName: string, responseType: any) {
  * Decorator for GET LIST endpoints (POST /getlist) - .NET style
  * Get paginated list with sorting
  */
-export function GetListEndpoint(entityName: string, responseType: any) {
+export function GetListEndpoint(entityName: string, requestType: any, responseType: any) {
   return applyDecorators(
     Post('getlist'),
     ApiOperation({ summary: `Get paginated list of ${entityName}s` }),
+    ApiBody({ type: requestType }),
     ApiResponse({
       status: 200,
       description: `List of ${entityName}s with pagination`,

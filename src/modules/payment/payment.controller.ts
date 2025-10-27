@@ -4,6 +4,7 @@ import { CrudController } from '../../common/decorators/crud-controller.decorato
 import { BaseController } from '../../common/base/base-controller';
 import {
   GetByStatusEndpoint,
+  SaveEndpoint,
 } from '../../common/decorators/endpoint.decorator';
 import { PaymentService } from './payment.service';
 import { Payment } from './entities/payment.entity';
@@ -36,6 +37,13 @@ export class PaymentController extends BaseController<
   protected getResponseClass = () => PaymentResponseDto;
   protected getListResponseClass = () => PaymentListResponseDto;
   protected getEntityName = () => 'Payment';
+  protected getRequestClass = () => SavePaymentDto;
+
+  // Override to apply Swagger decorators (necessary for API documentation)
+  @SaveEndpoint('Payment', SavePaymentDto, PaymentResponseDto)
+  async save(@Body() dto: SavePaymentDto): Promise<PaymentResponseDto> {
+    return this.saveEntity(dto);
+  }
 
   /**
    * Custom business endpoints

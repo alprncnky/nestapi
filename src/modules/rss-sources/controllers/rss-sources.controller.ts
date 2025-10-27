@@ -1,6 +1,6 @@
-import { Param, ParseEnumPipe, ParseIntPipe, NotFoundException } from '@nestjs/common';
+import { Param, ParseEnumPipe, ParseIntPipe, NotFoundException, Body } from '@nestjs/common';
 import { CrudController } from '../../../common/decorators/crud-controller.decorator';
-import { GetActiveEndpoint, GetByCategoryEndpoint, UpdateFieldEndpoint } from '../../../common/decorators/endpoint.decorator';
+import { GetActiveEndpoint, GetByCategoryEndpoint, UpdateFieldEndpoint, SaveEndpoint } from '../../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../../common/base/base-controller';
 import { RssSource } from '../entities/rss-source.entity';
 import { SaveRssSourceDto } from '../dto/save-rss-source.dto';
@@ -22,6 +22,13 @@ export class RssSourcesController extends BaseController<RssSource, SaveRssSourc
   protected getResponseClass = () => RssSourceResponseDto;
   protected getListResponseClass = () => RssSourceListResponseDto;
   protected getEntityName = () => 'RssSource';
+  protected getRequestClass = () => SaveRssSourceDto;
+
+  // Override to apply Swagger decorators (necessary for API documentation)
+  @SaveEndpoint('RssSource', SaveRssSourceDto, RssSourceResponseDto)
+  async save(@Body() dto: SaveRssSourceDto): Promise<RssSourceResponseDto> {
+    return this.saveEntity(dto);
+  }
 
 
   @GetActiveEndpoint('RssSource', RssSourceListResponseDto)

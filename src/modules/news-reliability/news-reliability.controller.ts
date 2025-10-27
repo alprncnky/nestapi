@@ -1,10 +1,11 @@
-import { Param, ParseIntPipe } from '@nestjs/common';
+import { Param, ParseIntPipe, Body } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
 import {
   GetPendingEndpoint,
   GetRelatedEndpoint,
   GetByFieldEndpoint,
   GetReportEndpoint,
+  SaveEndpoint,
 } from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
 import { NewsReliabilityTracking } from './entities/news-reliability-tracking.entity';
@@ -35,6 +36,13 @@ export class NewsReliabilityController extends BaseController<
   protected getResponseClass = () => ReliabilityTrackingResponseDto;
   protected getListResponseClass = () => ReliabilityTrackingListResponseDto;
   protected getEntityName = () => 'ReliabilityTracking';
+  protected getRequestClass = () => SaveReliabilityTrackingDto;
+
+  // Override to apply Swagger decorators (necessary for API documentation)
+  @SaveEndpoint('ReliabilityTracking', SaveReliabilityTrackingDto, ReliabilityTrackingResponseDto)
+  async save(@Body() dto: SaveReliabilityTrackingDto): Promise<ReliabilityTrackingResponseDto> {
+    return this.saveEntity(dto);
+  }
 
   /**
    * Get pending predictions (not yet evaluated)

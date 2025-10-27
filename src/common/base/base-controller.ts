@@ -1,4 +1,5 @@
-import { NotFoundException, Param, ParseIntPipe, Body, Query } from '@nestjs/common';
+import { NotFoundException, Param, ParseIntPipe, Body, Query, applyDecorators } from '@nestjs/common';
+import { ApiBody } from '@nestjs/swagger';
 import { BaseRepository } from './base-repository';
 import { BaseListResponseDto } from './base-dto';
 import { CriteriaDto } from '../dto/criteria.dto';
@@ -23,20 +24,26 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
   protected abstract getResponseClass(): new (data: T1) => T4;
   protected abstract getListResponseClass(): new (items: T4[], total: number) => T5;
   protected abstract getEntityName(): string;
+  protected abstract getRequestClass(): new (...args: any[]) => T2;
 
   /**
    * POST /save - Save entity (create or update)
-   * This is a default implementation that can be overridden in derived classes
+   * Derived classes should override and apply @SaveEndpoint decorator with types from getRequestClass()
    * .NET-style endpoint
+   * 
+   * Example:
+   * @SaveEndpoint('EntityName', RequestDto, ResponseDto)
+   * async save(@Body() dto: RequestDto): Promise<ResponseDto> {
+   *   return this.saveEntity(dto);
+   * }
    */
-  @SaveEndpoint('Entity', Object)
   async save(@Body() dto: T2 | T3): Promise<T4> {
     return this.saveEntity(dto);
   }
 
   /**
    * GET /get - Get entity by ID
-   * This is a default implementation that can be overridden in derived classes
+   * Can be overridden in derived classes for custom logic
    * .NET-style endpoint
    */
   @GetEndpoint('Entity', Object)
@@ -46,17 +53,17 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
 
   /**
    * POST /getlist - Get paginated list of entities
-   * This is a default implementation that can be overridden in derived classes
+   * Can be overridden in derived classes for custom logic
    * .NET-style endpoint
    */
-  @GetListEndpoint('Entity', Object)
+  @GetListEndpoint('Entity', CriteriaDto, Object)
   async getList(@Body() criteriaDto: CriteriaDto): Promise<T5> {
     return this.getListEntities(criteriaDto);
   }
 
   /**
    * DELETE /delete - Delete entity by ID
-   * This is a default implementation that can be overridden in derived classes
+   * Can be overridden in derived classes for custom logic
    * .NET-style endpoint
    */
   @DeleteEndpoint('Entity')
