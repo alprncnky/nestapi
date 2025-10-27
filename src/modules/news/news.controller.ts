@@ -1,4 +1,3 @@
-import { Body } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
 import { SaveEndpoint } from '../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../common/base/base-controller';
@@ -35,8 +34,8 @@ export class NewsController extends BaseController<
   }
 
   @SaveEndpoint(SaveNewsArticleDto, NewsArticleResponseDto)
-  async save(@Body() dto: SaveNewsArticleDto): Promise<NewsArticleResponseDto> {
-    return this.saveEntity(dto);
+  async save(dto: SaveNewsArticleDto): Promise<NewsArticleResponseDto> {
+    return super.save(dto);
   }
 }
 

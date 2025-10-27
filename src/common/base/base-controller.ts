@@ -1,7 +1,7 @@
 import { NotFoundException, ParseIntPipe, Body, Query } from '@nestjs/common';
 import { BaseRepository } from './base-repository';
 import { CriteriaDto } from '../dto/criteria.dto';
-import { GetEndpoint, GetListEndpoint, DeleteEndpoint } from '../decorators/endpoint.decorator';
+import { SaveEndpoint, GetEndpoint, GetListEndpoint, DeleteEndpoint } from '../decorators/endpoint.decorator';
 
 export interface IBaseService<T> {
   save(dto: any): Promise<T>;
@@ -18,6 +18,7 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
     protected readonly requestClass: new (...args: any[]) => T2,
   ) {}
 
+  @SaveEndpoint()
   async save(@Body() dto: T2 | T3): Promise<T4> {
     return this.saveEntity(dto);
   }

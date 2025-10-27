@@ -1,7 +1,6 @@
-import { Body } from '@nestjs/common';
 import { CrudController } from '../../common/decorators/crud-controller.decorator';
-import { BaseController } from '../../common/base/base-controller';
 import { SaveEndpoint } from '../../common/decorators/endpoint.decorator';
+import { BaseController } from '../../common/base/base-controller';
 import { PaymentService } from './payment.service';
 import { Payment } from './entities/payment.entity';
 import { SavePaymentDto } from './dto/save-payment.dto';
@@ -34,8 +33,8 @@ export class PaymentController extends BaseController<
   }
 
   @SaveEndpoint(SavePaymentDto, PaymentResponseDto)
-  async save(@Body() dto: SavePaymentDto): Promise<PaymentResponseDto> {
-    return this.saveEntity(dto);
+  async save(dto: SavePaymentDto): Promise<PaymentResponseDto> {
+    return super.save(dto);
   }
 }
 

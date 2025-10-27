@@ -1,4 +1,3 @@
-import { Body } from '@nestjs/common';
 import { CrudController } from '../../../common/decorators/crud-controller.decorator';
 import { SaveEndpoint } from '../../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../../common/base/base-controller';
@@ -26,8 +25,8 @@ export class RssSourcesController extends BaseController<RssSource, SaveRssSourc
   }
 
   @SaveEndpoint(SaveRssSourceDto, RssSourceResponseDto)
-  async save(@Body() dto: SaveRssSourceDto): Promise<RssSourceResponseDto> {
-    return this.saveEntity(dto);
+  async save(dto: SaveRssSourceDto): Promise<RssSourceResponseDto> {
+    return super.save(dto);
   }
 }
 

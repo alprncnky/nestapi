@@ -5,26 +5,42 @@ import { ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
  * Gets entity name from controller instance
  */
 function getEntityNameFromController(target: any): string {
-  return target.getEntityName?.() || 'Entity';
+  return target.entityName || 'Entity';
+}
+
+/**
+ * Gets request class from controller instance
+ */
+function getRequestClassFromController(target: any): any {
+  return target.requestClass || Object;
+}
+
+/**
+ * Gets response class from controller instance
+ */
+function getResponseClassFromController(target: any): any {
+  return target.responseClass || Object;
 }
 
 /**
  * Decorator for SAVE endpoints (POST /save) - .NET style upsert
  * Handles both create and update operations
- * Entity name is automatically derived from controller's getEntityName() method
+ * Automatically reads entityName, requestClass, and responseClass from controller
  */
-export function SaveEndpoint(requestType: any, responseType: any) {
+export function SaveEndpoint(requestType?: any, responseType?: any) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const entityName = getEntityNameFromController(target);
+    const reqType = requestType || getRequestClassFromController(target);
+    const resType = responseType || getResponseClassFromController(target);
     
     const decorators = applyDecorators(
       Post('save'),
       ApiOperation({ summary: `Save ${entityName} (create or update)` }),
-      ApiBody({ type: requestType }),
+      ApiBody({ type: reqType }),
       ApiResponse({
         status: 200,
         description: `${entityName} saved successfully`,
-        type: responseType,
+        type: resType,
       }),
       ApiResponse({ status: 400, description: 'Bad Request' }),
     );
