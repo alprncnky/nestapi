@@ -15,13 +15,15 @@ export class RssSourcesController extends BaseController<RssSource, SaveRssSourc
     private readonly rssSourcesService: RssSourcesService,
     private readonly rssSourceRepository: RssSourceRepository,
   ) {
-    super(rssSourcesService, rssSourceRepository);
+    super(
+      rssSourcesService,
+      rssSourceRepository,
+      RssSourceResponseDto,
+      RssSourceListResponseDto,
+      'RssSource',
+      SaveRssSourceDto,
+    );
   }
-
-  protected getResponseClass = () => RssSourceResponseDto;
-  protected getListResponseClass = () => RssSourceListResponseDto;
-  protected getEntityName = () => 'RssSource';
-  protected getRequestClass = () => SaveRssSourceDto;
 
   @SaveEndpoint(SaveRssSourceDto, RssSourceResponseDto)
   async save(@Body() dto: SaveRssSourceDto): Promise<RssSourceResponseDto> {

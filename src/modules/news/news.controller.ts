@@ -24,14 +24,15 @@ export class NewsController extends BaseController<
   constructor(
     private readonly newsService: NewsService,
   ) {
-    super(newsService);
+    super(
+      newsService,
+      undefined,
+      NewsArticleResponseDto,
+      NewsArticleListResponseDto,
+      'NewsArticle',
+      SaveNewsArticleDto,
+    );
   }
-
-  // Implement abstract methods
-  protected getResponseClass = () => NewsArticleResponseDto;
-  protected getListResponseClass = () => NewsArticleListResponseDto;
-  protected getEntityName = () => 'NewsArticle';
-  protected getRequestClass = () => SaveNewsArticleDto;
 
   @SaveEndpoint(SaveNewsArticleDto, NewsArticleResponseDto)
   async save(@Body() dto: SaveNewsArticleDto): Promise<NewsArticleResponseDto> {

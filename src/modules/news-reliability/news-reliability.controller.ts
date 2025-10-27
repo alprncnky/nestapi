@@ -23,14 +23,15 @@ export class NewsReliabilityController extends BaseController<
   constructor(
     private readonly newsReliabilityService: NewsReliabilityService,
   ) {
-    super(newsReliabilityService);
+    super(
+      newsReliabilityService,
+      undefined,
+      ReliabilityTrackingResponseDto,
+      ReliabilityTrackingListResponseDto,
+      'ReliabilityTracking',
+      SaveReliabilityTrackingDto,
+    );
   }
-
-  // Implement abstract methods
-  protected getResponseClass = () => ReliabilityTrackingResponseDto;
-  protected getListResponseClass = () => ReliabilityTrackingListResponseDto;
-  protected getEntityName = () => 'ReliabilityTracking';
-  protected getRequestClass = () => SaveReliabilityTrackingDto;
 
   @SaveEndpoint(SaveReliabilityTrackingDto, ReliabilityTrackingResponseDto)
   async save(@Body() dto: SaveReliabilityTrackingDto): Promise<ReliabilityTrackingResponseDto> {

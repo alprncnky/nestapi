@@ -23,16 +23,15 @@ export class PaymentController extends BaseController<
   PaymentListResponseDto
 > {
   constructor(private readonly paymentService: PaymentService) {
-    super(paymentService);
+    super(
+      paymentService,
+      undefined,
+      PaymentResponseDto,
+      PaymentListResponseDto,
+      'Payment',
+      SavePaymentDto,
+    );
   }
-
-  /**
-   * Implement abstract methods from BaseController
-   */
-  protected getResponseClass = () => PaymentResponseDto;
-  protected getListResponseClass = () => PaymentListResponseDto;
-  protected getEntityName = () => 'Payment';
-  protected getRequestClass = () => SavePaymentDto;
 
   @SaveEndpoint(SavePaymentDto, PaymentResponseDto)
   async save(@Body() dto: SavePaymentDto): Promise<PaymentResponseDto> {

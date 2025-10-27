@@ -11,13 +11,12 @@ export interface IBaseService<T> {
 export abstract class BaseController<T1, T2, T3, T4, T5> {
   constructor(
     protected readonly service: IBaseService<T1>,
-    protected readonly repository?: BaseRepository<any>,
+    protected readonly repository: BaseRepository<any> | undefined,
+    protected readonly responseClass: new (data: T1) => T4,
+    protected readonly listResponseClass: new (items: T4[], total: number) => T5,
+    protected readonly entityName: string,
+    protected readonly requestClass: new (...args: any[]) => T2,
   ) {}
-
-  protected abstract getResponseClass(): new (data: T1) => T4;
-  protected abstract getListResponseClass(): new (items: T4[], total: number) => T5;
-  protected abstract getEntityName(): string;
-  protected abstract getRequestClass(): new (...args: any[]) => T2;
 
   async save(@Body() dto: T2 | T3): Promise<T4> {
     return this.saveEntity(dto);
@@ -40,8 +39,7 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
 
   protected async saveEntity(dto: T2 | T3): Promise<T4> {
     const entity = await this.service.save(dto);
-    const ResponseClass = this.getResponseClass();
-    return new ResponseClass(entity);
+    return new this.responseClass(entity);
   }
 
   protected async getEntity(id: number): Promise<T4> {
@@ -50,10 +48,9 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
     }
     const entity = await this.repository.findById(id);
     if (!entity) {
-      throw new NotFoundException(`${this.getEntityName()} with ID ${id} not found`);
+      throw new NotFoundException(`${this.entityName} with ID ${id} not found`);
     }
-    const ResponseClass = this.getResponseClass();
-    return new ResponseClass(entity);
+    return new this.responseClass(entity);
   }
 
   protected async getListEntities(criteriaDto: CriteriaDto): Promise<T5> {
@@ -61,15 +58,13 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
       throw new Error('Repository not provided to BaseController');
     }
     const { entities, totalCount } = await this.repository.findWithPagination(criteriaDto);
-    const ResponseClass = this.getResponseClass();
-    const ListResponseClass = this.getListResponseClass();
-    const responseItems = entities.map((entity) => new ResponseClass(entity));
-    return new ListResponseClass(responseItems, totalCount);
+    const responseItems = entities.map((entity) => new this.responseClass(entity));
+    return new this.listResponseClass(responseItems, totalCount);
   }
 
   protected async deleteEntity(id: number): Promise<{ message: string }> {
     await this.service.remove(id);
-    return { message: `${this.getEntityName()} with ID ${id} deleted successfully` };
+    return { message: `${this.entityName} with ID ${id} deleted successfully` };
   }
 }
 
