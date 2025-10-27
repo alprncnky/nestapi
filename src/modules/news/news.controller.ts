@@ -54,7 +54,7 @@ export class NewsController extends BaseController<
   protected getRequestClass = () => SaveNewsArticleDto;
 
   // Override to apply Swagger decorators (necessary for API documentation)
-  @SaveEndpoint('NewsArticle', SaveNewsArticleDto, NewsArticleResponseDto)
+  @SaveEndpoint(SaveNewsArticleDto, NewsArticleResponseDto)
   async save(@Body() dto: SaveNewsArticleDto): Promise<NewsArticleResponseDto> {
     return this.saveEntity(dto);
   }
@@ -63,7 +63,7 @@ export class NewsController extends BaseController<
    * Get news articles by category
    * GET /news/category/:category
    */
-  @GetByCategoryEndpoint('NewsArticle', NewsArticleListResponseDto, NewsCategoryEnum)
+  @GetByCategoryEndpoint(NewsArticleListResponseDto, NewsCategoryEnum)
   async getByCategory(@Param('category', new ParseEnumPipe(NewsCategoryEnum)) category: NewsCategoryEnum): Promise<NewsArticleListResponseDto> {
     const articles = await this.newsService.findByCategory(category);
     return new NewsArticleListResponseDto(articles.map((article) => new NewsArticleResponseDto(article)), articles.length);
@@ -73,7 +73,7 @@ export class NewsController extends BaseController<
    * Get news articles by status
    * GET /news/status/:status
    */
-  @GetByStatusEndpoint('NewsArticle', NewsArticleListResponseDto, NewsStatusEnum)
+  @GetByStatusEndpoint(NewsArticleListResponseDto, NewsStatusEnum)
   async getByStatus(@Param('status', new ParseEnumPipe(NewsStatusEnum)) status: NewsStatusEnum): Promise<NewsArticleListResponseDto> {
     const articles = await this.newsService.findByStatus(status);
     return new NewsArticleListResponseDto(articles.map((article) => new NewsArticleResponseDto(article)), articles.length);
@@ -83,7 +83,7 @@ export class NewsController extends BaseController<
    * Get tags for a specific article
    * GET /news/:id/tags
    */
-  @GetRelatedEndpoint('NewsArticle', 'tags', NewsTagListResponseDto)
+  @GetRelatedEndpoint('tags', NewsTagListResponseDto)
   async getArticleTags(@Param('id', ParseIntPipe) id: number): Promise<NewsTagListResponseDto> {
     await this.newsService.findOne(id); // Verify article exists
     return new NewsTagListResponseDto([], 0); // Tags will be populated by NLP processing
@@ -93,7 +93,7 @@ export class NewsController extends BaseController<
    * Get stock mentions for a specific article
    * GET /news/:id/stocks
    */
-  @GetRelatedEndpoint('NewsArticle', 'stocks', StockMentionListResponseDto)
+  @GetRelatedEndpoint('stocks', StockMentionListResponseDto)
   async getArticleStocks(@Param('id', ParseIntPipe) id: number): Promise<StockMentionListResponseDto> {
     const mentions = await this.stockMentionsService.findByArticle(id);
     return new StockMentionListResponseDto(mentions.map((mention) => new StockMentionResponseDto(mention)), mentions.length);
@@ -103,7 +103,7 @@ export class NewsController extends BaseController<
    * Get extracted entities for a specific article
    * GET /news/:id/entities
    */
-  @GetRelatedEndpoint('NewsArticle', 'entities', ExtractedItemListResponseDto)
+  @GetRelatedEndpoint('entities', ExtractedItemListResponseDto)
   async getExtractedEntities(@Param('id', ParseIntPipe) id: number): Promise<ExtractedItemListResponseDto> {
     const items = await this.extractedItemsService.findByArticle(id);
     return new ExtractedItemListResponseDto(items.map((item) => new ExtractedItemResponseDto(item)), items.length);
@@ -113,7 +113,7 @@ export class NewsController extends BaseController<
    * Update sentiment score for an article
    * PATCH /news/:id/sentiment (expects body: { sentimentScore: number })
    */
-  @UpdateFieldEndpoint('NewsArticle', 'sentiment', NewsArticleResponseDto)
+  @UpdateFieldEndpoint('sentiment', NewsArticleResponseDto)
   async updateSentiment(@Param('id', ParseIntPipe) id: number, @Body() dto: { sentimentScore: number }): Promise<NewsArticleResponseDto> {
     await this.newsService.updateSentiment(id, dto.sentimentScore);
     return new NewsArticleResponseDto(await this.newsService.findOne(id));

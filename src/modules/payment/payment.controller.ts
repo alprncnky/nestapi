@@ -40,7 +40,7 @@ export class PaymentController extends BaseController<
   protected getRequestClass = () => SavePaymentDto;
 
   // Override to apply Swagger decorators (necessary for API documentation)
-  @SaveEndpoint('Payment', SavePaymentDto, PaymentResponseDto)
+  @SaveEndpoint(SavePaymentDto, PaymentResponseDto)
   async save(@Body() dto: SavePaymentDto): Promise<PaymentResponseDto> {
     return this.saveEntity(dto);
   }
@@ -69,7 +69,7 @@ export class PaymentController extends BaseController<
     return new PaymentResponseDto(await this.paymentService.refundPayment(id));
   }
 
-  @GetByStatusEndpoint('Payment', PaymentListResponseDto, PaymentStatusType)
+  @GetByStatusEndpoint(PaymentListResponseDto, PaymentStatusType)
   async findByStatus(@Param('status') status: PaymentStatusType): Promise<PaymentListResponseDto> {
     const payments = await this.paymentService.findByStatus(status);
     return new PaymentListResponseDto(payments.map((payment) => new PaymentResponseDto(payment)), payments.length);

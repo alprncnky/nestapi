@@ -25,25 +25,24 @@ export class RssSourcesController extends BaseController<RssSource, SaveRssSourc
   protected getRequestClass = () => SaveRssSourceDto;
 
   // Override to apply Swagger decorators (necessary for API documentation)
-  @SaveEndpoint('RssSource', SaveRssSourceDto, RssSourceResponseDto)
+  @SaveEndpoint(SaveRssSourceDto, RssSourceResponseDto)
   async save(@Body() dto: SaveRssSourceDto): Promise<RssSourceResponseDto> {
     return this.saveEntity(dto);
   }
 
-
-  @GetActiveEndpoint('RssSource', RssSourceListResponseDto)
+  @GetActiveEndpoint(RssSourceListResponseDto)
   async getActiveSources(): Promise<RssSourceListResponseDto> {
     const sources = await this.rssSourceRepository.findActive();
     return new RssSourceListResponseDto(sources.map((source) => new RssSourceResponseDto(source)), sources.length);
   }
 
-  @GetByCategoryEndpoint('RssSource', RssSourceListResponseDto, SourceCategoryEnum)
+  @GetByCategoryEndpoint(RssSourceListResponseDto, SourceCategoryEnum)
   async getByCategory(@Param('category', new ParseEnumPipe(SourceCategoryEnum)) category: SourceCategoryEnum): Promise<RssSourceListResponseDto> {
     const sources = await this.rssSourceRepository.findActiveByCategory(category);
     return new RssSourceListResponseDto(sources.map((source) => new RssSourceResponseDto(source)), sources.length);
   }
 
-  @UpdateFieldEndpoint('RssSource', 'reliability', RssSourceResponseDto)
+  @UpdateFieldEndpoint('reliability', RssSourceResponseDto)
   async updateReliability(@Param('id', ParseIntPipe) id: number, @Param('reliability', ParseIntPipe) score: number): Promise<RssSourceResponseDto> {
     await this.rssSourcesService.updateReliabilityScore(id, score);
     const source = await this.rssSourceRepository.findById(id);

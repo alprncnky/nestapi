@@ -39,7 +39,7 @@ export class NewsReliabilityController extends BaseController<
   protected getRequestClass = () => SaveReliabilityTrackingDto;
 
   // Override to apply Swagger decorators (necessary for API documentation)
-  @SaveEndpoint('ReliabilityTracking', SaveReliabilityTrackingDto, ReliabilityTrackingResponseDto)
+  @SaveEndpoint(SaveReliabilityTrackingDto, ReliabilityTrackingResponseDto)
   async save(@Body() dto: SaveReliabilityTrackingDto): Promise<ReliabilityTrackingResponseDto> {
     return this.saveEntity(dto);
   }
@@ -48,7 +48,7 @@ export class NewsReliabilityController extends BaseController<
    * Get pending predictions (not yet evaluated)
    * GET /reliability/pending
    */
-  @GetPendingEndpoint('Prediction', ReliabilityTrackingListResponseDto)
+  @GetPendingEndpoint(ReliabilityTrackingListResponseDto)
   async getPendingPredictions(): Promise<ReliabilityTrackingListResponseDto> {
     const predictions = await this.newsReliabilityService.getPendingPredictions();
     return new ReliabilityTrackingListResponseDto(predictions.map((p) => new ReliabilityTrackingResponseDto(p)), predictions.length);
@@ -58,7 +58,7 @@ export class NewsReliabilityController extends BaseController<
    * Get reliability tracking by article
    * GET /reliability/article/:articleId
    */
-  @GetByFieldEndpoint('ReliabilityTracking', 'article', ReliabilityTrackingListResponseDto)
+  @GetByFieldEndpoint('article', ReliabilityTrackingListResponseDto)
   async getByArticle(@Param('article', ParseIntPipe) articleId: number): Promise<ReliabilityTrackingListResponseDto> {
     const records = await this.newsReliabilityService.findByArticle(articleId);
     return new ReliabilityTrackingListResponseDto(records.map((r) => new ReliabilityTrackingResponseDto(r)), records.length);
@@ -68,7 +68,7 @@ export class NewsReliabilityController extends BaseController<
    * Get reliability tracking by stock
    * GET /reliability/stock/:symbol
    */
-  @GetByFieldEndpoint('ReliabilityTracking', 'stock', ReliabilityTrackingListResponseDto)
+  @GetByFieldEndpoint('stock', ReliabilityTrackingListResponseDto)
   async getByStock(@Param('stock') symbol: string): Promise<ReliabilityTrackingListResponseDto> {
     const records = await this.newsReliabilityService.findByStock(symbol);
     return new ReliabilityTrackingListResponseDto(records.map((r) => new ReliabilityTrackingResponseDto(r)), records.length);
@@ -78,7 +78,7 @@ export class NewsReliabilityController extends BaseController<
    * Get accuracy report for a source
    * GET /reliability/source/:sourceId/accuracy
    */
-  @GetReportEndpoint('Source', 'accuracy', true)
+  @GetReportEndpoint('accuracy', true)
   async getSourceAccuracy(@Param('id', ParseIntPipe) sourceId: number): Promise<{ totalPredictions: number; correctDirectionPredictions: number; averageAccuracy: number }> {
     return await this.newsReliabilityService.getSourceAccuracyReport(sourceId);
   }
