@@ -1,7 +1,6 @@
 import { NotFoundException, ParseIntPipe, Body, Query } from '@nestjs/common';
 import { BaseRepository } from './base-repository';
 import { CriteriaDto } from '../dto/criteria.dto';
-import { SaveEndpoint, GetEndpoint, GetListEndpoint, DeleteEndpoint } from '../decorators/endpoint.decorator';
 
 export interface IBaseService<T> {
   save(dto: any): Promise<T>;
@@ -18,22 +17,18 @@ export abstract class BaseController<T1, T2, T3, T4, T5> {
     protected readonly requestClass: new (...args: any[]) => T2,
   ) {}
 
-  @SaveEndpoint()
   async save(@Body() dto: T2 | T3): Promise<T4> {
     return this.saveEntity(dto);
   }
 
-  @GetEndpoint('Entity', Object)
   async get(@Query('id', ParseIntPipe) id: number): Promise<T4> {
     return this.getEntity(id);
   }
 
-  @GetListEndpoint('Entity', CriteriaDto, Object)
   async getList(@Body() criteriaDto: CriteriaDto): Promise<T5> {
     return this.getListEntities(criteriaDto);
   }
 
-  @DeleteEndpoint('Entity')
   async delete(@Query('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     return this.deleteEntity(id);
   }

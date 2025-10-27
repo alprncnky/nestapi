@@ -1,6 +1,8 @@
+import { Query, Body, ParseIntPipe } from '@nestjs/common';
 import { CrudController } from '../../../common/decorators/crud-controller.decorator';
-import { SaveEndpoint } from '../../../common/decorators/endpoint.decorator';
+import { SaveEndpoint, GetEndpoint, GetListEndpoint, DeleteEndpoint } from '../../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../../common/base/base-controller';
+import { CriteriaDto } from '../../../common/dto/criteria.dto';
 import { RssSource } from '../entities/rss-source.entity';
 import { SaveRssSourceDto } from '../dto/save-rss-source.dto';
 import { RssSourceResponseDto } from '../responses/rss-source-response.dto';
@@ -25,8 +27,23 @@ export class RssSourcesController extends BaseController<RssSource, SaveRssSourc
   }
 
   @SaveEndpoint(SaveRssSourceDto, RssSourceResponseDto)
-  async save(dto: SaveRssSourceDto): Promise<RssSourceResponseDto> {
+  async save(@Body() dto: SaveRssSourceDto): Promise<RssSourceResponseDto> {
     return super.save(dto);
+  }
+
+  @GetEndpoint('RssSource', RssSourceResponseDto)
+  async get(@Query('id', ParseIntPipe) id: number): Promise<RssSourceResponseDto> {
+    return super.get(id);
+  }
+
+  @GetListEndpoint('RssSource', CriteriaDto, RssSourceListResponseDto)
+  async getList(@Body() criteriaDto: CriteriaDto): Promise<RssSourceListResponseDto> {
+    return super.getList(criteriaDto);
+  }
+
+  @DeleteEndpoint('RssSource')
+  async delete(@Query('id', ParseIntPipe) id: number): Promise<{ message: string }> {
+    return super.delete(id);
   }
 }
 
