@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NewsReliabilityTrackingSchema } from './data/schemas/news-reliability-tracking.schema';
 import { NewsReliabilityController } from './controllers/news-reliability.controller';
 import { NewsReliabilityService } from './business/services/news-reliability.service';
+import { NewsReliabilityTrackingRepository } from './data/repositories/news-reliability-tracking.repository';
 
 /**
  * News Reliability Module
@@ -19,7 +20,7 @@ import { NewsReliabilityService } from './business/services/news-reliability.ser
     TypeOrmModule.forFeature([NewsReliabilityTrackingSchema]),
   ],
   controllers: [NewsReliabilityController],
-  providers: [NewsReliabilityService],
-  exports: [NewsReliabilityService], // Export for use in other modules
+  providers: [NewsReliabilityService, NewsReliabilityTrackingRepository],
+  exports: [NewsReliabilityService, NewsReliabilityTrackingRepository], // Export for use in other modules
 })
 export class NewsReliabilityModule {}

@@ -8,6 +8,7 @@ import { SaveNewsArticleDto } from '../contracts/requests/save-news-article.dto'
 import { NewsArticleResponseDto } from '../contracts/responses/news-article-response.dto';
 import { NewsArticleListResponseDto } from '../contracts/responses/news-article-list-response.dto';
 import { NewsService } from '../business/services/news.service';
+import { NewsArticleRepository } from '../data/repositories/news-article.repository';
 
 /**
  * Controller for News Article endpoints
@@ -24,10 +25,11 @@ export class NewsController extends BaseController<
 > {
   constructor(
     private readonly newsService: NewsService,
+    private readonly newsArticleRepository: NewsArticleRepository,
   ) {
     super(
       newsService,
-      undefined,
+      newsArticleRepository,
       NewsArticleResponseDto,
       NewsArticleListResponseDto,
       'NewsArticle',

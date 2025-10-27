@@ -10,6 +10,7 @@ import { NewsService } from './business/services/news.service';
 import { NewsTagsService } from './business/services/news-tags.service';
 import { StockMentionsService } from './business/services/stock-mentions.service';
 import { ExtractedItemsService } from './business/services/extracted-items.service';
+import { NewsArticleRepository } from './data/repositories/news-article.repository';
 
 /**
  * News Module
@@ -36,6 +37,7 @@ import { ExtractedItemsService } from './business/services/extracted-items.servi
   controllers: [NewsController],
   providers: [
     NewsService,
+    NewsArticleRepository,
     NewsTagsService,
     StockMentionsService,
     ExtractedItemsService,

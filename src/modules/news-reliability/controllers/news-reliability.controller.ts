@@ -8,6 +8,7 @@ import { SaveReliabilityTrackingDto } from '../contracts/requests/save-reliabili
 import { ReliabilityTrackingResponseDto } from '../contracts/responses/reliability-tracking-response.dto';
 import { ReliabilityTrackingListResponseDto } from '../contracts/responses/reliability-tracking-list-response.dto';
 import { NewsReliabilityService } from '../business/services/news-reliability.service';
+import { NewsReliabilityTrackingRepository } from '../data/repositories/news-reliability-tracking.repository';
 
 /**
  * Controller for News Reliability Tracking endpoints
@@ -23,10 +24,11 @@ export class NewsReliabilityController extends BaseController<
 > {
   constructor(
     private readonly newsReliabilityService: NewsReliabilityService,
+    private readonly newsReliabilityTrackingRepository: NewsReliabilityTrackingRepository,
   ) {
     super(
       newsReliabilityService,
-      undefined,
+      newsReliabilityTrackingRepository,
       ReliabilityTrackingResponseDto,
       ReliabilityTrackingListResponseDto,
       'ReliabilityTracking',
