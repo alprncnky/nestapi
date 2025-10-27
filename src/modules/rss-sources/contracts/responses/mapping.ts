@@ -1,4 +1,4 @@
-import { ResponseFieldConfig } from '../../../common/decorators/auto-response.decorator';
+import { ResponseFieldConfig } from '../../../../common/decorators/auto-response.decorator';
 import { FeedTypeEnum } from '../enums/feed-type.enum';
 import { SourceCategoryEnum } from '../enums/source-category.enum';
 

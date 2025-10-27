@@ -1,5 +1,5 @@
-import { BaseCreateDto } from '../../../common/base/base-dto';
-import { AutoApplyDecorators } from '../../../common/decorators/auto-apply.decorator';
+import { BaseCreateDto } from '../../../../common/base/base-dto';
+import { AutoApplyDecorators } from '../../../../common/decorators/auto-apply.decorator';
 import { FeedTypeEnum } from '../enums/feed-type.enum';
 import { SourceCategoryEnum } from '../enums/source-category.enum';
 import { CreateRssSourceMapping } from './mapping';

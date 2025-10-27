@@ -1,4 +1,4 @@
-import { BaseListResponseDto } from '../../../common/base/base-dto';
+import { BaseListResponseDto } from '../../../../common/base/base-dto';
 import { RssSourceResponseDto } from './rss-source-response.dto';
 
 /**

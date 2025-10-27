@@ -1,5 +1,5 @@
 import { AutoEntity } from '../../../common/decorators/auto-entity.decorator';
-import { RssSource } from '../../rss-sources/entities/rss-source.entity';
+import { RssSource } from '../../rss-sources/data/entities/rss-source.entity';
 import { NewsStatusEnum } from '../enums/news-status.enum';
 import { NewsCategoryEnum } from '../enums/news-category.enum';
 import { ImpactLevelEnum } from '../enums/impact-level.enum';

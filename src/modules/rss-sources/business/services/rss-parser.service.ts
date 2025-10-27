@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
-import { FeedTypeEnum } from '../enums/feed-type.enum';
+import { FeedTypeEnum } from '../../contracts/enums/feed-type.enum';
 
 export interface ParsedItem {
   title: string;

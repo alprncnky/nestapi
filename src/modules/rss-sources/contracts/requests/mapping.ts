@@ -3,7 +3,7 @@ import {
   NumberField,
   EnumField,
   BooleanField,
-} from '../../../common/decorators/field.decorator';
+} from '../../../../common/decorators/field.decorator';
 import { FeedTypeEnum } from '../enums/feed-type.enum';
 import { SourceCategoryEnum } from '../enums/source-category.enum';
 

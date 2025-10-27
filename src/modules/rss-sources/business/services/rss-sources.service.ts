@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
-import { RssSource } from '../entities/rss-source.entity';
-import { SaveRssSourceDto } from '../dto/save-rss-source.dto';
-import { RssSourceRepository } from '../repositories/rss-source.repository';
+import { RssSource } from '../../data/entities/rss-source.entity';
+import { SaveRssSourceDto } from '../../contracts/requests/save-rss-source.dto';
+import { RssSourceRepository } from '../../data/repositories/rss-source.repository';
 
 @Injectable()
 export class RssSourcesService {

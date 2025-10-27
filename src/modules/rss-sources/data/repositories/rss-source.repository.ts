@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseRepository } from '../../../common/base/base-repository';
+import { BaseRepository } from '../../../../common/base/base-repository';
 import { RssSource } from '../entities/rss-source.entity';
-import { SourceCategoryEnum } from '../enums/source-category.enum';
+import { SourceCategoryEnum } from '../../contracts/enums/source-category.enum';
 
 @Injectable()
 export class RssSourceRepository extends BaseRepository<RssSource> {

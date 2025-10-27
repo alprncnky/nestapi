@@ -3,12 +3,12 @@ import { CrudController } from '../../../common/decorators/crud-controller.decor
 import { SaveEndpoint, GetEndpoint, GetListEndpoint, DeleteEndpoint } from '../../../common/decorators/endpoint.decorator';
 import { BaseController } from '../../../common/base/base-controller';
 import { CriteriaDto } from '../../../common/dto/criteria.dto';
-import { RssSource } from '../entities/rss-source.entity';
-import { SaveRssSourceDto } from '../dto/save-rss-source.dto';
-import { RssSourceResponseDto } from '../responses/rss-source-response.dto';
-import { RssSourceListResponseDto } from '../responses/rss-source-list-response.dto';
-import { RssSourcesService } from '../services/rss-sources.service';
-import { RssSourceRepository } from '../repositories/rss-source.repository';
+import { RssSource } from '../data/entities/rss-source.entity';
+import { SaveRssSourceDto } from '../contracts/requests/save-rss-source.dto';
+import { RssSourceResponseDto } from '../contracts/responses/rss-source-response.dto';
+import { RssSourceListResponseDto } from '../contracts/responses/rss-source-list-response.dto';
+import { RssSourcesService } from '../business/services/rss-sources.service';
+import { RssSourceRepository } from '../data/repositories/rss-source.repository';
 
 @CrudController('rss-sources', 'RssSource')
 export class RssSourcesController extends BaseController<RssSource, SaveRssSourceDto, SaveRssSourceDto, RssSourceResponseDto, RssSourceListResponseDto> {

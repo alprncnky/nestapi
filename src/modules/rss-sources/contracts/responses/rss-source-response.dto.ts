@@ -1,5 +1,5 @@
-import { BaseResponseDto } from '../../../common/base/base-dto';
-import { AutoResponse } from '../../../common/decorators/auto-response.decorator';
+import { BaseResponseDto } from '../../../../common/base/base-dto';
+import { AutoResponse } from '../../../../common/decorators/auto-response.decorator';
 import { RssSourceResponseMapping } from './mapping';
 
 /**

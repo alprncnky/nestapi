@@ -1,10 +1,10 @@
-import { AutoEntity } from '../../../common/decorators/auto-entity.decorator';
-import { FeedTypeEnum } from '../enums/feed-type.enum';
-import { SourceCategoryEnum } from '../enums/source-category.enum';
+import { AutoEntity } from '../../../../common/decorators/auto-entity.decorator';
+import { FeedTypeEnum } from '../../contracts/enums/feed-type.enum';
+import { SourceCategoryEnum } from '../../contracts/enums/source-category.enum';
 
 /**
  * RSS Source entity - Represents an RSS feed source
- * TypeORM schema is defined in ./rss-source.schema.ts
+ * TypeORM schema is defined in ../schemas/rss-source.schema.ts
  */
 @AutoEntity()
 export class RssSource {

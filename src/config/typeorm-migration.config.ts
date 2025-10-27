@@ -3,8 +3,8 @@ import { config } from 'dotenv';
 import { join } from 'path';
 
 // Import schemas
-import { RssSourceSchema } from '../modules/rss-sources/schemas/rss-source.schema';
-import { SourceReliabilityScoreSchema } from '../modules/rss-sources/schemas/source-reliability-score.schema';
+import { RssSourceSchema } from '../modules/rss-sources/data/schemas/rss-source.schema';
+import { SourceReliabilityScoreSchema } from '../modules/rss-sources/data/schemas/source-reliability-score.schema';
 import { NewsArticleSchema } from '../modules/news/schemas/news-article.schema';
 import { NewsTagSchema } from '../modules/news/schemas/news-tag.schema';
 import { NewsArticleTagSchema } from '../modules/news/schemas/news-article-tag.schema';

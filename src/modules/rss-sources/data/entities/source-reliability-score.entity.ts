@@ -1,9 +1,9 @@
-import { AutoEntity } from '../../../common/decorators/auto-entity.decorator';
+import { AutoEntity } from '../../../../common/decorators/auto-entity.decorator';
 import { RssSource } from './rss-source.entity';
 
 /**
  * Source Reliability Score entity - Tracks historical reliability of RSS sources
- * TypeORM schema is defined in ./source-reliability-score.schema.ts
+ * TypeORM schema is defined in ../schemas/source-reliability-score.schema.ts
  */
 @AutoEntity()
 export class SourceReliabilityScore {

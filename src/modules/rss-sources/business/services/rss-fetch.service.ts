@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RssParserService, ParsedItem } from './rss-parser.service';
-import { NewsService } from '../../news/news.service';
-import { RssSource } from '../entities/rss-source.entity';
-import { NewsStatusEnum } from '../../news/enums/news-status.enum';
-import { compareTwoStrings } from '../../../common/utils/string-similarity.util';
+import { NewsService } from '../../../news/news.service';
+import { RssSource } from '../../data/entities/rss-source.entity';
+import { NewsStatusEnum } from '../../../news/enums/news-status.enum';
+import { compareTwoStrings } from '../../../../common/utils/string-similarity.util';
 
 @Injectable()
 export class RssFetchService {

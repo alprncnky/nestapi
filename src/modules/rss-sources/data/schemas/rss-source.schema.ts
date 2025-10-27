@@ -1,7 +1,7 @@
 import { EntitySchema } from 'typeorm';
 import { RssSource } from '../entities/rss-source.entity';
-import { FeedTypeEnum } from '../enums/feed-type.enum';
-import { SourceCategoryEnum } from '../enums/source-category.enum';
+import { FeedTypeEnum } from '../../contracts/enums/feed-type.enum';
+import { SourceCategoryEnum } from '../../contracts/enums/source-category.enum';
 
 export const RssSourceSchema = new EntitySchema<RssSource>({
   name: 'RssSource',
