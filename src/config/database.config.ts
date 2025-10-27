@@ -4,12 +4,12 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 // Import schemas for clean architecture
 import { RssSourceSchema } from '../modules/rss-sources/data/schemas/rss-source.schema';
 import { SourceReliabilityScoreSchema } from '../modules/rss-sources/data/schemas/source-reliability-score.schema';
-import { NewsArticleSchema } from '../modules/news/schemas/news-article.schema';
-import { NewsTagSchema } from '../modules/news/schemas/news-tag.schema';
-import { NewsArticleTagSchema } from '../modules/news/schemas/news-article-tag.schema';
-import { StockMentionSchema } from '../modules/news/schemas/stock-mention.schema';
-import { ExtractedItemSchema } from '../modules/news/schemas/extracted-item.schema';
-import { NewsReliabilityTrackingSchema } from '../modules/news-reliability/schemas/news-reliability-tracking.schema';
+import { NewsArticleSchema } from '../modules/news/data/schemas/news-article.schema';
+import { NewsTagSchema } from '../modules/news/data/schemas/news-tag.schema';
+import { NewsArticleTagSchema } from '../modules/news/data/schemas/news-article-tag.schema';
+import { StockMentionSchema } from '../modules/news/data/schemas/stock-mention.schema';
+import { ExtractedItemSchema } from '../modules/news/data/schemas/extracted-item.schema';
+import { NewsReliabilityTrackingSchema } from '../modules/news-reliability/data/schemas/news-reliability-tracking.schema';
 
 /**
  * Database configuration factory
