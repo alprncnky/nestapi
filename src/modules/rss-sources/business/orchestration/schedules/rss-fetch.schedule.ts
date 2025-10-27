@@ -14,7 +14,7 @@ import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.
 @Injectable()
 export class RssFetchSchedule implements IScheduledTask {
   readonly name = 'RssFetchSchedule';
-  readonly schedule = CronExpression.EVERY_MINUTE;
+  readonly schedule = CronExpression.EVERY_5_MINUTES;
 
   private readonly logger = new Logger(RssFetchSchedule.name);
 
