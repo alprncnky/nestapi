@@ -60,7 +60,7 @@ export class PatternRecognitionService {
               description: `${hour}:00 saatlerinde yüksek tahmin doğruluğu`
             }),
             confidence: avgAccuracy,
-            frequency: volume,
+            occurrences: volume,
           });
         }
       }
@@ -91,7 +91,7 @@ export class PatternRecognitionService {
               description: `${dayNames[dayOfWeek]} günlerinde yüksek tahmin doğruluğu`
             }),
             confidence: avgAccuracy,
-            frequency: accuracies.length,
+            occurrences: accuracies.length,
           });
         }
       }
@@ -156,7 +156,7 @@ export class PatternRecognitionService {
                 description: `${sector} sektöründe ${avgChange > 0 ? 'pozitif' : 'negatif'} trend`
               }),
               confidence: Math.min(100, Math.abs(avgChange) * 10),
-              frequency: changes.length,
+              occurrences: changes.length,
             });
           }
         }
@@ -205,7 +205,7 @@ export class PatternRecognitionService {
                     description: `${stock.stockSymbol} hissesinde hacim artışı ile fiyat değişimi korelasyonu`
                   }),
                   confidence: Math.min(100, Math.abs(priceChange) * 5),
-                  frequency: 1,
+                  occurrences: 1,
                 });
               }
             }
@@ -263,7 +263,7 @@ export class PatternRecognitionService {
             description: `Piyasa durumu: ${marketCondition}`
           }),
           confidence: Math.min(100, volatility * 10),
-          frequency: 1,
+          occurrences: 1,
         });
       }
 

@@ -6,7 +6,8 @@ export class PatternRecognition {
   patternType: string;
   patternData: string; // JSON string
   confidence: number;
-  frequency: number;
+  occurrences: number; // How many times this pattern occurred
+  accuracy: number; // Prediction accuracy when this pattern is present
   lastSeen: Date;
   createdAt: Date;
   updatedAt: Date;

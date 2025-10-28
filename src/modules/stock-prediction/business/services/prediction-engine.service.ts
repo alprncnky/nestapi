@@ -4,6 +4,8 @@ import { StockPricesService } from '../../../stock-prices/business/services/stoc
 import { NewsReliabilityService } from '../../../news-reliability/business/services/news-reliability.service';
 import { OpenAIService } from '../../../../common/services/openai.service';
 import { PredictionImpactEnum } from '../../contracts/enums/prediction-impact.enum';
+import { PredictionRuleRepository } from '../../data/repositories/prediction-rule.repository';
+import { RuleTypeEnum } from '../../contracts/enums/rule-type.enum';
 
 export interface StockPrediction {
   impact: PredictionImpactEnum;
@@ -23,6 +25,7 @@ export class PredictionEngineService {
     private readonly stockPricesService: StockPricesService,
     private readonly reliabilityService: NewsReliabilityService,
     private readonly openaiService: OpenAIService,
+    private readonly ruleRepository: PredictionRuleRepository,
   ) {}
 
   /**
@@ -180,9 +183,79 @@ JSON formatında dön:
    * Apply learned rules to adjust prediction
    */
   private async applyLearningRules(prediction: StockPrediction, article: any): Promise<StockPrediction> {
-    // TODO: Implement rule application logic
-    // This will be implemented in LearningSystemService
-    return prediction;
+    try {
+      // Get active prediction rules
+      const categoryRule = await this.ruleRepository.findByTypeAndValue(RuleTypeEnum.CATEGORY, article.mainCategory);
+      const sentimentCategory = article.sentimentScore > 0.3 ? 'POSITIVE' : 
+                               article.sentimentScore < -0.3 ? 'NEGATIVE' : 'NEUTRAL';
+      const sentimentRule = await this.ruleRepository.findByTypeAndValue(RuleTypeEnum.SENTIMENT, sentimentCategory);
+      const impactRule = await this.ruleRepository.findByTypeAndValue(RuleTypeEnum.IMPACT_LEVEL, article.impactLevel);
+
+      let adjustedPrediction = { ...prediction };
+      let totalWeight = 0;
+      let weightedConfidence = 0;
+      let weightedChangePercent = 0;
+
+      // Apply category-based adjustments
+      if (categoryRule && categoryRule.totalPredictions > 5) {
+        const weight = Math.min(categoryRule.successRate, 1);
+        weightedConfidence += prediction.confidence * weight;
+        weightedChangePercent += prediction.changePercent * weight;
+        totalWeight += weight;
+
+        // Adjust confidence based on rule accuracy
+        if (categoryRule.averageAccuracy > 70) {
+          adjustedPrediction.confidence = Math.min(95, prediction.confidence + 5);
+        } else if (categoryRule.averageAccuracy < 50) {
+          adjustedPrediction.confidence = Math.max(20, prediction.confidence - 10);
+        }
+      }
+
+      // Apply sentiment-based adjustments
+      if (sentimentRule && sentimentRule.totalPredictions > 5) {
+        const weight = Math.min(sentimentRule.successRate, 1);
+        weightedConfidence += prediction.confidence * weight;
+        weightedChangePercent += prediction.changePercent * weight;
+        totalWeight += weight;
+
+        // Adjust change percent based on historical accuracy
+        if (sentimentRule.averageAccuracy > 70) {
+          adjustedPrediction.changePercent = prediction.changePercent * 1.1;
+        } else if (sentimentRule.averageAccuracy < 50) {
+          adjustedPrediction.changePercent = prediction.changePercent * 0.9;
+        }
+      }
+
+      // Apply impact-level adjustments
+      if (impactRule && impactRule.totalPredictions > 5) {
+        const weight = Math.min(impactRule.successRate, 1);
+        weightedConfidence += prediction.confidence * weight;
+        weightedChangePercent += prediction.changePercent * weight;
+        totalWeight += weight;
+
+        // Adjust based on impact level historical performance
+        if (impactRule.averageAccuracy > 75) {
+          adjustedPrediction.confidence = Math.min(95, prediction.confidence + 8);
+        }
+      }
+
+      // Apply weighted adjustments if we have enough data
+      if (totalWeight > 0) {
+        adjustedPrediction.confidence = Math.round((weightedConfidence / totalWeight) * 100) / 100;
+        adjustedPrediction.changePercent = Math.round((weightedChangePercent / totalWeight) * 100) / 100;
+      }
+
+      // Ensure values are within reasonable bounds
+      adjustedPrediction.confidence = Math.max(10, Math.min(95, adjustedPrediction.confidence));
+      adjustedPrediction.changePercent = Math.max(-20, Math.min(20, adjustedPrediction.changePercent));
+
+      this.logger.debug(`Applied learning rules: Original confidence ${prediction.confidence}%, Adjusted ${adjustedPrediction.confidence}%`);
+      
+      return adjustedPrediction;
+    } catch (error) {
+      this.logger.error('Error applying learning rules:', error);
+      return prediction; // Return original prediction if rule application fails
+    }
   }
 
   /**

@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NewsService } from '../../../news/business/services/news.service';
 import { StockPricesService } from '../../../stock-prices/business/services/stock-prices.service';
 import { NewsReliabilityService } from '../../../news-reliability/business/services/news-reliability.service';
+import { DailyReportRepository } from '../../data/repositories/daily-report.repository';
+import { DailyReport as DailyReportEntity } from '../../data/entities/daily-report.entity';
 
 export interface DailyReport {
   date: string;
@@ -39,6 +41,7 @@ export class DailyReportService {
     private readonly newsService: NewsService,
     private readonly stockPricesService: StockPricesService,
     private readonly reliabilityService: NewsReliabilityService,
+    private readonly dailyReportRepository: DailyReportRepository,
   ) {}
 
   /**
@@ -330,7 +333,25 @@ export class DailyReportService {
    * Save daily report to database
    */
   private async saveDailyReport(report: DailyReport): Promise<void> {
-    // TODO: Implement report saving to database
-    this.logger.debug('Saving daily report to database');
+    try {
+      const dailyReportEntity = new DailyReportEntity();
+      dailyReportEntity.reportDate = new Date(report.date);
+      dailyReportEntity.reportData = JSON.stringify(report);
+      dailyReportEntity.totalArticles = report.newsStats.totalArticles;
+      dailyReportEntity.totalPredictions = report.predictionAccuracy.totalPredictions;
+      dailyReportEntity.averageAccuracy = report.predictionAccuracy.averageAccuracy;
+      dailyReportEntity.topGainers = JSON.stringify(report.topMovers.topGainers);
+      dailyReportEntity.topLosers = JSON.stringify(report.topMovers.topLosers);
+      dailyReportEntity.insights = JSON.stringify(report.insights);
+      dailyReportEntity.recommendations = JSON.stringify(report.recommendations);
+      dailyReportEntity.createdAt = new Date();
+      dailyReportEntity.updatedAt = new Date();
+      
+      await this.dailyReportRepository.save(dailyReportEntity);
+      
+      this.logger.log(`Daily report saved for ${report.date}`);
+    } catch (error) {
+      this.logger.error('Error saving daily report:', error);
+    }
   }
 }

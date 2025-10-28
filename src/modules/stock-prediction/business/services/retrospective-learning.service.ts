@@ -4,6 +4,8 @@ import { StockPricesService } from '../../../stock-prices/business/services/stoc
 import { NewsService } from '../../../news/business/services/news.service';
 import { NewsReliabilityService } from '../../../news-reliability/business/services/news-reliability.service';
 import { LearningSystemService } from './learning-system.service';
+import { RetrospectiveAnalysisRepository } from '../../data/repositories/retrospective-analysis.repository';
+import { RetrospectiveAnalysis } from '../../data/entities/retrospective-analysis.entity';
 
 @Injectable()
 export class RetrospectiveLearningService {
@@ -14,6 +16,7 @@ export class RetrospectiveLearningService {
     private readonly newsService: NewsService,
     private readonly reliabilityService: NewsReliabilityService,
     private readonly learningSystem: LearningSystemService,
+    private readonly retrospectiveAnalysisRepository: RetrospectiveAnalysisRepository,
   ) {}
 
   /**
@@ -152,11 +155,141 @@ export class RetrospectiveLearningService {
    * Find news related to the movement (same sector, keywords)
    */
   private async findRelatedNews(movement: any, startDate: Date, endDate: Date): Promise<any[]> {
-    // TODO: Implement related news finding logic
-    // - Same sector stocks
-    // - Similar keywords in news
-    // - Market-wide news that could affect this stock
-    return [];
+    try {
+      const relatedNews: any[] = [];
+      
+      // 1. Find news mentioning stocks in the same sector
+      const sectorNews = await this.findSectorRelatedNews(movement, startDate, endDate);
+      relatedNews.push(...sectorNews);
+      
+      // 2. Find news with similar keywords
+      const keywordNews = await this.findKeywordRelatedNews(movement, startDate, endDate);
+      relatedNews.push(...keywordNews);
+      
+      // 3. Find market-wide news that could affect this stock
+      const marketNews = await this.findMarketWideNews(startDate, endDate);
+      relatedNews.push(...marketNews);
+      
+      // Remove duplicates based on article ID
+      const uniqueNews = relatedNews.filter((news, index, self) => 
+        index === self.findIndex(n => n.id === news.id)
+      );
+      
+      this.logger.debug(`Found ${uniqueNews.length} related news articles for ${movement.symbol}`);
+      return uniqueNews;
+      
+    } catch (error) {
+      this.logger.error('Error finding related news:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Find news related to stocks in the same sector
+   */
+  private async findSectorRelatedNews(movement: any, startDate: Date, endDate: Date): Promise<any[]> {
+    // For now, we'll find news mentioning other stocks in the same time period
+    // In a real implementation, you would have sector information
+    const allNews = await this.newsService.findByDateRange(startDate, endDate);
+    
+    // Filter news that might be sector-related based on keywords
+    const sectorKeywords = this.getSectorKeywords(movement.symbol);
+    const sectorNews = allNews.filter(news => {
+      const content = (news.title + ' ' + (news.contentPlain || '')).toLowerCase();
+      return sectorKeywords.some(keyword => content.includes(keyword.toLowerCase()));
+    });
+    
+    return sectorNews;
+  }
+
+  /**
+   * Find news with similar keywords
+   */
+  private async findKeywordRelatedNews(movement: any, startDate: Date, endDate: Date): Promise<any[]> {
+    const allNews = await this.newsService.findByDateRange(startDate, endDate);
+    
+    // Extract keywords from movement context (stock name, etc.)
+    const movementKeywords = this.extractMovementKeywords(movement);
+    
+    const keywordNews = allNews.filter(news => {
+      const content = (news.title + ' ' + (news.contentPlain || '')).toLowerCase();
+      return movementKeywords.some(keyword => content.includes(keyword.toLowerCase()));
+    });
+    
+    return keywordNews;
+  }
+
+  /**
+   * Find market-wide news that could affect stocks
+   */
+  private async findMarketWideNews(startDate: Date, endDate: Date): Promise<any[]> {
+    const allNews = await this.newsService.findByDateRange(startDate, endDate);
+    
+    // Market-wide keywords that could affect all stocks
+    const marketKeywords = [
+      'borsa', 'bist', 'piyasa', 'ekonomi', 'faiz', 'enflasyon', 'dolar', 'euro',
+      'merkez bankası', 'tcmb', 'hükümet', 'bütçe', 'vergi', 'reform',
+      'küresel', 'uluslararası', 'fed', 'ecb', 'brexit', 'savaş', 'pandemi'
+    ];
+    
+    const marketNews = allNews.filter(news => {
+      const content = (news.title + ' ' + (news.contentPlain || '')).toLowerCase();
+      return marketKeywords.some(keyword => content.includes(keyword.toLowerCase()));
+    });
+    
+    return marketNews;
+  }
+
+  /**
+   * Get sector keywords based on stock symbol
+   */
+  private getSectorKeywords(stockSymbol: string): string[] {
+    // This is a simplified mapping - in a real system, you'd have proper sector data
+    const sectorMappings: Record<string, string[]> = {
+      'BANK': ['banka', 'bankacılık', 'kredi', 'mevduat', 'faiz'],
+      'TEK': ['teknoloji', 'yazılım', 'bilgisayar', 'internet', 'dijital'],
+      'OTO': ['otomotiv', 'araç', 'otomobil', 'fabrika', 'üretim'],
+      'GID': ['gıda', 'yiyecek', 'restoran', 'market', 'tarım'],
+      'ELE': ['elektrik', 'enerji', 'elektronik', 'telekomünikasyon'],
+      'KIM': ['kimya', 'petrol', 'rafineri', 'plastik', 'ilaç'],
+      'MET': ['metal', 'çelik', 'demir', 'madencilik', 'maden'],
+      'TEKSTIL': ['tekstil', 'giyim', 'konfeksiyon', 'kumaş'],
+    };
+    
+    // Try to match stock symbol prefix to sector
+    for (const [prefix, keywords] of Object.entries(sectorMappings)) {
+      if (stockSymbol.startsWith(prefix)) {
+        return keywords;
+      }
+    }
+    
+    // Default keywords for unknown sectors
+    return ['şirket', 'hisse', 'yatırım', 'finans'];
+  }
+
+  /**
+   * Extract keywords from movement context
+   */
+  private extractMovementKeywords(movement: any): string[] {
+    const keywords: string[] = [];
+    
+    // Add stock name keywords
+    if (movement.name) {
+      const nameWords = movement.name.toLowerCase().split(' ').filter((word: string) => word.length > 3);
+      keywords.push(...nameWords);
+    }
+    
+    // Add stock symbol
+    keywords.push(movement.symbol.toLowerCase());
+    
+    // Add movement-related keywords
+    if (movement.changePercent > 0) {
+      keywords.push('artış', 'yükseliş', 'pozitif', 'olumlu');
+    } else if (movement.changePercent < 0) {
+      keywords.push('düşüş', 'kayıp', 'negatif', 'olumsuz');
+    }
+    
+    return keywords;
   }
 
   /**
@@ -268,11 +401,187 @@ export class RetrospectiveLearningService {
    * Find related movements (similar stocks, same sector)
    */
   private async findRelatedMovements(movement: any): Promise<any[]> {
-    // TODO: Implement related movements finding
-    // - Same sector stocks
-    // - Stocks with similar market cap
-    // - Stocks with correlation patterns
-    return [];
+    try {
+      const relatedMovements: any[] = [];
+      
+      // 1. Find stocks in the same sector
+      const sectorMovements = await this.findSectorRelatedMovements(movement);
+      relatedMovements.push(...sectorMovements);
+      
+      // 2. Find stocks with similar market cap
+      const marketCapMovements = await this.findMarketCapRelatedMovements(movement);
+      relatedMovements.push(...marketCapMovements);
+      
+      // 3. Find stocks with correlation patterns
+      const correlationMovements = await this.findCorrelationRelatedMovements(movement);
+      relatedMovements.push(...correlationMovements);
+      
+      // Remove duplicates based on stock symbol
+      const uniqueMovements = relatedMovements.filter((mov, index, self) => 
+        index === self.findIndex(m => m.symbol === mov.symbol)
+      );
+      
+      this.logger.debug(`Found ${uniqueMovements.length} related movements for ${movement.symbol}`);
+      return uniqueMovements;
+      
+    } catch (error) {
+      this.logger.error('Error finding related movements:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Find movements in the same sector
+   */
+  private async findSectorRelatedMovements(movement: any): Promise<any[]> {
+    const allStocks = await this.stockPricesService.findAllLatest();
+    const sectorMovements: any[] = [];
+    
+    // Get sector prefix from stock symbol
+    const sectorPrefix = this.getSectorPrefix(movement.symbol);
+    
+    for (const stock of allStocks) {
+      if (stock.stockSymbol === movement.symbol) continue;
+      
+      // Check if stock is in the same sector
+      if (this.getSectorPrefix(stock.stockSymbol) === sectorPrefix) {
+        const prices = await this.stockPricesService.findBySymbolAndDateRange(
+          stock.stockSymbol,
+          new Date(movement.startTime.getTime() - 24 * 60 * 60 * 1000), // 24 hours before
+          new Date(movement.endTime.getTime() + 24 * 60 * 60 * 1000)   // 24 hours after
+        );
+        
+        if (prices.length >= 2) {
+          const startPrice = prices[0].last;
+          const endPrice = prices[prices.length - 1].last;
+          const changePercent = ((endPrice - startPrice) / startPrice) * 100;
+          
+          // Only include significant movements (> 2%)
+          if (Math.abs(changePercent) > 2) {
+            sectorMovements.push({
+              symbol: stock.stockSymbol,
+              name: stock.stockName,
+              changePercent: Math.round(changePercent * 100) / 100,
+              startPrice,
+              endPrice,
+              startTime: prices[0].lastUpdate,
+              endTime: prices[prices.length - 1].lastUpdate,
+              volume: prices[prices.length - 1].volumeLot,
+              correlationType: 'SECTOR'
+            });
+          }
+        }
+      }
+    }
+    
+    return sectorMovements;
+  }
+
+  /**
+   * Find movements with similar market cap
+   */
+  private async findMarketCapRelatedMovements(movement: any): Promise<any[]> {
+    const allStocks = await this.stockPricesService.findAllLatest();
+    const marketCapMovements: any[] = [];
+    
+    // Estimate market cap based on stock price and volume
+    const movementStock = allStocks.find(s => s.stockSymbol === movement.symbol);
+    if (!movementStock) return marketCapMovements;
+    
+    const movementMarketCap = movementStock.last * movementStock.volumeLot;
+    
+    for (const stock of allStocks) {
+      if (stock.stockSymbol === movement.symbol) continue;
+      
+      const stockMarketCap = stock.last * stock.volumeLot;
+      
+      // Check if market cap is within 50% range
+      if (stockMarketCap > movementMarketCap * 0.5 && stockMarketCap < movementMarketCap * 1.5) {
+        const prices = await this.stockPricesService.findBySymbolAndDateRange(
+          stock.stockSymbol,
+          new Date(movement.startTime.getTime() - 24 * 60 * 60 * 1000),
+          new Date(movement.endTime.getTime() + 24 * 60 * 60 * 1000)
+        );
+        
+        if (prices.length >= 2) {
+          const startPrice = prices[0].last;
+          const endPrice = prices[prices.length - 1].last;
+          const changePercent = ((endPrice - startPrice) / startPrice) * 100;
+          
+          if (Math.abs(changePercent) > 2) {
+            marketCapMovements.push({
+              symbol: stock.stockSymbol,
+              name: stock.stockName,
+              changePercent: Math.round(changePercent * 100) / 100,
+              startPrice,
+              endPrice,
+              startTime: prices[0].lastUpdate,
+              endTime: prices[prices.length - 1].lastUpdate,
+              volume: prices[prices.length - 1].volumeLot,
+              correlationType: 'MARKET_CAP'
+            });
+          }
+        }
+      }
+    }
+    
+    return marketCapMovements;
+  }
+
+  /**
+   * Find movements with correlation patterns
+   */
+  private async findCorrelationRelatedMovements(movement: any): Promise<any[]> {
+    const allStocks = await this.stockPricesService.findAllLatest();
+    const correlationMovements: any[] = [];
+    
+    for (const stock of allStocks.slice(0, 20)) { // Limit to first 20 stocks for performance
+      if (stock.stockSymbol === movement.symbol) continue;
+      
+      const prices = await this.stockPricesService.findBySymbolAndDateRange(
+        stock.stockSymbol,
+        new Date(movement.startTime.getTime() - 2 * 60 * 60 * 1000), // 2 hours before
+        new Date(movement.endTime.getTime() + 2 * 60 * 60 * 1000)   // 2 hours after
+      );
+      
+      if (prices.length >= 2) {
+        const startPrice = prices[0].last;
+        const endPrice = prices[prices.length - 1].last;
+        const changePercent = ((endPrice - startPrice) / startPrice) * 100;
+        
+        // Check for correlation (same direction, similar magnitude)
+        const directionMatch = Math.sign(changePercent) === Math.sign(movement.changePercent);
+        const magnitudeSimilar = Math.abs(changePercent - movement.changePercent) < 5;
+        
+        if (directionMatch && magnitudeSimilar && Math.abs(changePercent) > 2) {
+          correlationMovements.push({
+            symbol: stock.stockSymbol,
+            name: stock.stockName,
+            changePercent: Math.round(changePercent * 100) / 100,
+            startPrice,
+            endPrice,
+            startTime: prices[0].lastUpdate,
+            endTime: prices[prices.length - 1].lastUpdate,
+            volume: prices[prices.length - 1].volumeLot,
+            correlationType: 'CORRELATION',
+            correlationStrength: Math.abs(changePercent - movement.changePercent)
+          });
+        }
+      }
+    }
+    
+    return correlationMovements;
+  }
+
+  /**
+   * Get sector prefix from stock symbol
+   */
+  private getSectorPrefix(stockSymbol: string): string {
+    // Extract first 3-4 characters as sector prefix
+    if (stockSymbol.length >= 4) {
+      return stockSymbol.substring(0, 4);
+    }
+    return stockSymbol.substring(0, 3);
   }
 
   /**
@@ -337,15 +646,70 @@ export class RetrospectiveLearningService {
    * Save missed opportunity analysis
    */
   private async saveMissedOpportunityAnalysis(analysis: any): Promise<void> {
-    // TODO: Implement saving to database
-    this.logger.debug('Saving missed opportunity analysis');
+    try {
+      const retrospectiveAnalysis = new RetrospectiveAnalysis();
+      retrospectiveAnalysis.stockSymbol = analysis.stockSymbol;
+      retrospectiveAnalysis.movementPercent = analysis.movementPercent;
+      retrospectiveAnalysis.analysisDate = new Date();
+      retrospectiveAnalysis.movementStartTime = analysis.startTime || new Date();
+      retrospectiveAnalysis.movementEndTime = analysis.endTime || new Date();
+      retrospectiveAnalysis.precedingNewsCount = analysis.precedingNewsCount;
+      retrospectiveAnalysis.existingPredictionsCount = analysis.existingPredictionsCount || 0;
+      retrospectiveAnalysis.missedOpportunity = true;
+      retrospectiveAnalysis.missedReasons = JSON.stringify(analysis.missedReasons);
+      retrospectiveAnalysis.retrospectiveAccuracy = 0; // No accuracy for missed opportunities
+      retrospectiveAnalysis.analysisData = JSON.stringify({
+        newsCategories: analysis.newsCategories,
+        newsSentiments: analysis.newsSentiments,
+        averageSentiment: analysis.averageSentiment,
+        analysisTimestamp: new Date().toISOString()
+      });
+      retrospectiveAnalysis.createdAt = new Date();
+      retrospectiveAnalysis.updatedAt = new Date();
+      
+      await this.retrospectiveAnalysisRepository.save(retrospectiveAnalysis);
+      
+      this.logger.log(`Missed opportunity analysis saved for ${analysis.stockSymbol}`);
+    } catch (error) {
+      this.logger.error('Error saving missed opportunity analysis:', error);
+    }
   }
 
   /**
    * Save retrospective insights
    */
   private async saveRetrospectiveInsights(insights: any): Promise<void> {
-    // TODO: Implement saving to database
-    this.logger.debug('Saving retrospective insights');
+    try {
+      // Create a general retrospective analysis record for insights
+      const retrospectiveAnalysis = new RetrospectiveAnalysis();
+      retrospectiveAnalysis.stockSymbol = 'MARKET_WIDE'; // Indicates market-wide insights
+      retrospectiveAnalysis.movementPercent = insights.averageMovement || 0;
+      retrospectiveAnalysis.analysisDate = new Date();
+      retrospectiveAnalysis.movementStartTime = new Date();
+      retrospectiveAnalysis.movementEndTime = new Date();
+      retrospectiveAnalysis.precedingNewsCount = 0;
+      retrospectiveAnalysis.existingPredictionsCount = insights.totalMovements || 0;
+      retrospectiveAnalysis.missedOpportunity = false;
+      retrospectiveAnalysis.missedReasons = JSON.stringify([]);
+      retrospectiveAnalysis.retrospectiveAccuracy = insights.predictionAccuracy || 0;
+      retrospectiveAnalysis.analysisData = JSON.stringify({
+        totalMovements: insights.totalMovements,
+        averageMovement: insights.averageMovement,
+        topGainers: insights.topGainers,
+        topLosers: insights.topLosers,
+        missedOpportunities: insights.missedOpportunities,
+        predictionAccuracy: insights.predictionAccuracy,
+        insightsTimestamp: new Date().toISOString(),
+        type: 'MARKET_WIDE_INSIGHTS'
+      });
+      retrospectiveAnalysis.createdAt = new Date();
+      retrospectiveAnalysis.updatedAt = new Date();
+      
+      await this.retrospectiveAnalysisRepository.save(retrospectiveAnalysis);
+      
+      this.logger.log('Retrospective insights saved successfully');
+    } catch (error) {
+      this.logger.error('Error saving retrospective insights:', error);
+    }
   }
 }
