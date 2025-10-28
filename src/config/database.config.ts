@@ -10,6 +10,7 @@ import { NewsArticleTagSchema } from '../modules/news/data/schemas/news-article-
 import { StockMentionSchema } from '../modules/news/data/schemas/stock-mention.schema';
 import { ExtractedItemSchema } from '../modules/news/data/schemas/extracted-item.schema';
 import { NewsReliabilityTrackingSchema } from '../modules/news-reliability/data/schemas/news-reliability-tracking.schema';
+import { StockPriceSchema } from '../modules/stock-prices/data/schemas/stock-price.schema';
 
 /**
  * Database configuration factory
@@ -34,6 +35,7 @@ export default registerAs(
       StockMentionSchema,
       ExtractedItemSchema,
       NewsReliabilityTrackingSchema,
+      StockPriceSchema,
     ],
     synchronize: false, // ⚠️ DISABLED - Use migrations instead!
     logging: process.env.NODE_ENV === 'development',

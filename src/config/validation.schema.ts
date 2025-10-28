@@ -46,5 +46,19 @@ export const validationSchema = Joi.object({
   DB_SSL_MODE: Joi.boolean()
     .default(false)
     .description('Database SSL mode'),
+
+  // BIST100 API Configuration
+  BIST_API_URL: Joi.string()
+    .uri()
+    .required()
+    .description('BIST100 API endpoint URL'),
+  
+  BIST_API_HOST: Joi.string()
+    .required()
+    .description('BIST100 API host header'),
+  
+  BIST_API_KEY: Joi.string()
+    .required()
+    .description('BIST100 API key'),
 });
 

@@ -7,6 +7,7 @@ import { GlobalSchedulerModule } from './common/scheduler.module';
 import { RssSourcesModule } from './modules/rss-sources/rss-sources.module';
 import { NewsModule } from './modules/news/news.module';
 import { NewsReliabilityModule } from './modules/news-reliability/news-reliability.module';
+import { StockPricesModule } from './modules/stock-prices/stock-prices.module';
 import databaseConfig from './config/database.config';
 import { validationSchema } from './config/validation.schema';
 
@@ -42,6 +43,7 @@ import { validationSchema } from './config/validation.schema';
     RssSourcesModule,
     NewsModule,
     NewsReliabilityModule,
+    StockPricesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
