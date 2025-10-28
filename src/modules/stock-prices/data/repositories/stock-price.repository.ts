@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StockPrice } from '../entities/stock-price.entity';
 import { BaseRepository } from '../../../../common/base/base-repository';
+import { SQLQueries } from './stock-price.query';
 
 @Injectable()
 export class StockPriceRepository extends BaseRepository<StockPrice> {
@@ -14,10 +15,11 @@ export class StockPriceRepository extends BaseRepository<StockPrice> {
   }
 
   async findLatestBySymbol(symbol: string): Promise<StockPrice | null> {
-    return await this.repository.findOne({
-      where: { stockSymbol: symbol },
-      order: { fetchedAt: 'DESC' },
-    });
+    const result = await this.repository.query(
+      SQLQueries.findLatestBySymbol,
+      [symbol]
+    );
+    return result.length > 0 ? result[0] : null;
   }
 
   async findBySymbolAndDateRange(
@@ -25,20 +27,13 @@ export class StockPriceRepository extends BaseRepository<StockPrice> {
     startDate: Date,
     endDate: Date,
   ): Promise<StockPrice[]> {
-    return await this.repository
-      .createQueryBuilder('sp')
-      .where('sp.stockSymbol = :symbol', { symbol })
-      .andWhere('sp.lastUpdate BETWEEN :startDate AND :endDate', { startDate, endDate })
-      .orderBy('sp.lastUpdate', 'ASC')
-      .getMany();
+    return await this.repository.query(
+      SQLQueries.findBySymbolAndDateRange,
+      [symbol, startDate, endDate]
+    );
   }
 
   async findAllLatest(): Promise<StockPrice[]> {
-    return await this.repository
-      .createQueryBuilder('sp')
-      .distinctOn(['sp.stockSymbol'])
-      .orderBy('sp.stockSymbol', 'ASC')
-      .addOrderBy('sp.fetchedAt', 'DESC')
-      .getMany();
+    return await this.repository.query(SQLQueries.findAllLatest);
   }
 }
