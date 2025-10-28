@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { NewsReliabilityTracking } from '../../data/entities/news-reliability-tracking.entity';
 import { SaveReliabilityTrackingDto } from '../../contracts/requests/save-reliability-tracking.dto';
 import { PredictionImpactEnum } from '../../contracts/enums/prediction-impact.enum';
@@ -212,6 +212,44 @@ export class NewsReliabilityService {
     const magnitudeAccuracy = Math.max(0, 50 - changeDiff * 10);
 
     return directionCorrect + magnitudeAccuracy;
+  }
+
+  /**
+   * Update retrospective accuracy
+   */
+  async updateRetrospectiveAccuracy(id: number, accuracy: number): Promise<void> {
+    await this.reliabilityRepository.update(id, {
+      predictionAccuracy: accuracy,
+    });
+  }
+
+  /**
+   * Find predictions by date range
+   */
+  async findByDateRange(startDate: Date, endDate: Date): Promise<NewsReliabilityTracking[]> {
+    return await this.reliabilityRepository.find({
+      where: {
+        createdAt: Between(startDate, endDate),
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  /**
+   * Find predictions by stock and date range
+   */
+  async findByStockAndDateRange(
+    stockSymbol: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<NewsReliabilityTracking[]> {
+    return await this.reliabilityRepository.find({
+      where: {
+        stockSymbol,
+        createdAt: Between(startDate, endDate),
+      },
+      order: { createdAt: 'DESC' },
+    });
   }
 }
 

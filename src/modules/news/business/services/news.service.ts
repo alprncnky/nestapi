@@ -117,6 +117,36 @@ export class NewsService {
   }
 
   /**
+   * Find recent processed articles (for prediction engine)
+   */
+  async findRecentProcessedArticles(minutes: number = 15): Promise<NewsArticle[]> {
+    const cutoffTime = new Date(Date.now() - minutes * 60 * 1000);
+    return await this.newsRepository.find({
+      where: {
+        status: NewsStatusEnum.PROCESSED,
+        updatedAt: MoreThan(cutoffTime),
+      },
+      order: { updatedAt: 'DESC' },
+    });
+  }
+
+  /**
+   * Find article by ID (alias for findOne)
+   */
+  async findById(id: number): Promise<NewsArticle> {
+    return await this.findOne(id);
+  }
+
+  /**
+   * Get stock mentions for an article
+   */
+  async getStockMentions(articleId: number): Promise<any[]> {
+    // TODO: Implement stock mentions retrieval
+    // This would typically query the stock mentions table
+    return [];
+  }
+
+  /**
    * Find articles by status
    */
   async findByStatus(status: NewsStatusEnum): Promise<NewsArticle[]> {

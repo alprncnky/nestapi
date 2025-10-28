@@ -60,5 +60,29 @@ export const validationSchema = Joi.object({
   BIST_API_KEY: Joi.string()
     .required()
     .description('BIST100 API key'),
+
+  // OpenAI Configuration
+  OPENAI_API_KEY: Joi.string()
+    .required()
+    .description('OpenAI API key for AI predictions'),
+  
+  OPENAI_MODEL: Joi.string()
+    .default('gpt-4o-mini')
+    .description('OpenAI model to use for predictions'),
+
+  // Prediction System Configuration
+  PREDICTION_CONFIDENCE_THRESHOLD: Joi.number()
+    .default(70)
+    .min(0)
+    .max(100)
+    .description('Minimum confidence threshold for predictions'),
+  
+  LEARNING_SYSTEM_ENABLED: Joi.boolean()
+    .default(true)
+    .description('Enable learning system for continuous improvement'),
+  
+  DAILY_REPORT_ENABLED: Joi.boolean()
+    .default(true)
+    .description('Enable daily report generation'),
 });
 
