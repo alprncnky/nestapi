@@ -44,6 +44,13 @@ export class StockMentionsService {
   }
 
   /**
+   * Find all mentions for an article (alias for findByArticle)
+   */
+  async findByArticleId(articleId: number): Promise<StockMention[]> {
+    return await this.findByArticle(articleId);
+  }
+
+  /**
    * Find all mentions for a stock symbol
    */
   async findByStock(stockSymbol: string): Promise<StockMention[]> {

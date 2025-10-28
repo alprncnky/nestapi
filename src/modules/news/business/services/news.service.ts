@@ -10,6 +10,7 @@ import { SaveNewsArticleDto } from '../../contracts/requests/save-news-article.d
 import { NewsCategoryEnum } from '../../contracts/enums/news-category.enum';
 import { ImpactLevelEnum } from '../../contracts/enums/impact-level.enum';
 import { NewsStatusEnum } from '../../contracts/enums/news-status.enum';
+import { StockMentionsService } from './stock-mentions.service';
 
 /**
  * Service for News Article operations
@@ -20,6 +21,7 @@ export class NewsService {
   constructor(
     @InjectRepository(NewsArticle)
     private readonly newsRepository: Repository<NewsArticle>,
+    private readonly stockMentionsService: StockMentionsService,
   ) {}
 
   /**
@@ -141,9 +143,7 @@ export class NewsService {
    * Get stock mentions for an article
    */
   async getStockMentions(articleId: number): Promise<any[]> {
-    // TODO: Implement stock mentions retrieval
-    // This would typically query the stock mentions table
-    return [];
+    return await this.stockMentionsService.findByArticleId(articleId);
   }
 
   /**

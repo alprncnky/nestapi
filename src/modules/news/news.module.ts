@@ -36,11 +36,11 @@ import { NewsArticleRepository } from './data/repositories/news-article.reposito
   ],
   controllers: [NewsController],
   providers: [
-    NewsService,
     NewsArticleRepository,
-    NewsTagsService,
     StockMentionsService,
     ExtractedItemsService,
+    NewsTagsService,
+    NewsService,
   ],
   exports: [
     NewsService,
