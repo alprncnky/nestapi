@@ -14,25 +14,45 @@
 ## 🎯 System Architecture Overview
 
 ### Core Philosophy
-**"Learn from Every Prediction"** - The system creates a continuous feedback loop where:
+**"Learn from Every Prediction & Every Market Movement"** - The system creates a dual-loop learning architecture:
+
+#### **Prediction Loop** (Real-time)
 1. **News Analysis** → AI generates stock predictions
 2. **Real-time Tracking** → Monitor actual stock price movements  
 3. **Outcome Evaluation** → Compare predictions with reality
 4. **Learning & Improvement** → Update rules and algorithms based on results
-5. **Daily Reporting** → Generate insights and recommendations
+
+#### **Retrospective Learning Loop** (Batch Processing)
+1. **Market Movement Detection** → Identify significant stock movements
+2. **Backward News Analysis** → Analyze news that preceded the movement
+3. **Pattern Recognition** → Discover missed patterns and correlations
+4. **System Enhancement** → Improve prediction algorithms and rules
+
+### Key Considerations
+- **Multi-source News**: Multiple sources may report the same event
+- **Non-stock News**: Not all news mentions stocks directly
+- **Similar Stocks**: Related stocks may be affected by the same news
+- **Holistic Analysis**: System needs to see the complete picture
+- **Learning Phases**: Both predictive and retrospective learning modes
 
 ### System Components
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   News Module   │───▶│ Prediction      │───▶│ Stock Prices    │
-│                 │    │ Engine          │    │ Module          │
+│ (Multi-source)  │    │ Engine          │    │ Module          │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          ▼                       ▼                       ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │ News Reliability │◀───│ Actual Impact   │◀───│ Learning        │
 │ Tracking         │    │ Tracker         │    │ System          │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ Retrospective    │    │ News Clustering  │    │ Pattern         │
+│ Learning Engine  │◀───│ & Correlation    │◀───│ Recognition     │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          ▼                       ▼                       ▼
@@ -57,37 +77,54 @@ src/modules/stock-prediction/
 │   │   ├── prediction-engine.service.ts      # Core prediction logic
 │   │   ├── actual-impact-tracker.service.ts  # Real-time outcome tracking
 │   │   ├── learning-system.service.ts        # ML and rule learning
-│   │   └── daily-report.service.ts           # Analytics and reporting
+│   │   ├── daily-report.service.ts           # Analytics and reporting
+│   │   ├── retrospective-learning.service.ts # Backward analysis engine
+│   │   ├── news-clustering.service.ts        # Multi-source news grouping
+│   │   └── pattern-recognition.service.ts    # Advanced pattern analysis
 │   └── orchestration/
 │       └── schedules/
 │           ├── prediction-processor.schedule.ts
-│           └── daily-analysis.schedule.ts
+│           ├── daily-analysis.schedule.ts
+│           └── retrospective-learning.schedule.ts
 ├── data/
 │   ├── entities/
 │   │   ├── prediction-rule.entity.ts
 │   │   ├── daily-report.entity.ts
-│   │   └── prediction-insight.entity.ts
+│   │   ├── prediction-insight.entity.ts
+│   │   ├── news-cluster.entity.ts
+│   │   ├── retrospective-analysis.entity.ts
+│   │   └── pattern-recognition.entity.ts
 │   ├── repositories/
 │   │   ├── prediction-rule.repository.ts
 │   │   ├── daily-report.repository.ts
-│   │   └── prediction-insight.repository.ts
+│   │   ├── prediction-insight.repository.ts
+│   │   ├── news-cluster.repository.ts
+│   │   ├── retrospective-analysis.repository.ts
+│   │   └── pattern-recognition.repository.ts
 │   └── schemas/
 │       ├── prediction-rule.schema.ts
 │       ├── daily-report.schema.ts
-│       └── prediction-insight.schema.ts
+│       ├── prediction-insight.schema.ts
+│       ├── news-cluster.schema.ts
+│       ├── retrospective-analysis.schema.ts
+│       └── pattern-recognition.schema.ts
 └── contracts/
     ├── requests/
     │   ├── create-prediction.dto.ts
     │   ├── update-prediction.dto.ts
+    │   ├── retrospective-analysis.dto.ts
     │   └── mapping.ts
     ├── responses/
     │   ├── prediction-response.dto.ts
     │   ├── daily-report-response.dto.ts
+    │   ├── retrospective-analysis-response.dto.ts
     │   └── mapping.ts
     └── enums/
         ├── prediction-status.enum.ts
         ├── rule-type.enum.ts
-        └── insight-type.enum.ts
+        ├── insight-type.enum.ts
+        ├── learning-mode.enum.ts
+        └── cluster-type.enum.ts
 ```
 
 ---
@@ -747,7 +784,565 @@ export class LearningSystemService {
 }
 ```
 
-### 4. Daily Report Service
+### 4. Retrospective Learning Service
+
+**File**: `src/modules/stock-prediction/business/services/retrospective-learning.service.ts`
+
+```typescript
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { StockPricesService } from '../../stock-prices/business/services/stock-prices.service';
+import { NewsService } from '../../news/news.service';
+import { NewsReliabilityService } from '../../news-reliability/business/services/news-reliability.service';
+import { LearningSystemService } from './learning-system.service';
+
+@Injectable()
+export class RetrospectiveLearningService {
+  private readonly logger = new Logger(RetrospectiveLearningService.name);
+
+  constructor(
+    private readonly stockPricesService: StockPricesService,
+    private readonly newsService: NewsService,
+    private readonly reliabilityService: NewsReliabilityService,
+    private readonly learningSystem: LearningSystemService,
+  ) {}
+
+  /**
+   * Daily retrospective analysis - analyze significant movements
+   * Runs every day at 7 PM to analyze the day's movements
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_7PM)
+  async performRetrospectiveAnalysis(): Promise<void> {
+    try {
+      this.logger.log('Starting retrospective learning analysis...');
+      
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      // 1. Find significant stock movements
+      const significantMovements = await this.findSignificantMovements(yesterday, today);
+      
+      this.logger.log(`Found ${significantMovements.length} significant movements`);
+      
+      // 2. Analyze each movement
+      for (const movement of significantMovements) {
+        await this.analyzeMovementRetrospectively(movement);
+      }
+      
+      // 3. Generate retrospective insights
+      await this.generateRetrospectiveInsights(significantMovements);
+      
+      this.logger.log('Retrospective learning analysis completed');
+    } catch (error) {
+      this.logger.error('Error in retrospective analysis:', error);
+    }
+  }
+
+  /**
+   * Find stocks with significant price movements
+   */
+  private async findSignificantMovements(startDate: Date, endDate: Date): Promise<any[]> {
+    const allStocks = await this.stockPricesService.findAllLatest();
+    const movements = [];
+    
+    for (const stock of allStocks) {
+      const prices = await this.stockPricesService.findBySymbolAndDateRange(
+        stock.stockSymbol,
+        startDate,
+        endDate
+      );
+      
+      if (prices.length >= 2) {
+        const startPrice = prices[0].last;
+        const endPrice = prices[prices.length - 1].last;
+        const changePercent = ((endPrice - startPrice) / startPrice) * 100;
+        
+        // Consider movements > 5% as significant
+        if (Math.abs(changePercent) > 5) {
+          movements.push({
+            symbol: stock.stockSymbol,
+            name: stock.stockName,
+            changePercent: Math.round(changePercent * 100) / 100,
+            startPrice,
+            endPrice,
+            startTime: prices[0].lastUpdate,
+            endTime: prices[prices.length - 1].lastUpdate,
+            volume: prices[prices.length - 1].volumeLot,
+          });
+        }
+      }
+    }
+    
+    return movements.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+  }
+
+  /**
+   * Analyze a movement retrospectively
+   */
+  private async analyzeMovementRetrospectively(movement: any): Promise<void> {
+    try {
+      this.logger.log(`Analyzing movement: ${movement.symbol} ${movement.changePercent}%`);
+      
+      // 1. Find news that preceded the movement
+      const precedingNews = await this.findPrecedingNews(movement);
+      
+      // 2. Check if we had predictions for this movement
+      const existingPredictions = await this.findExistingPredictions(movement);
+      
+      // 3. Analyze missed opportunities
+      if (precedingNews.length > 0 && existingPredictions.length === 0) {
+        await this.analyzeMissedOpportunity(movement, precedingNews);
+      }
+      
+      // 4. Analyze prediction accuracy
+      if (existingPredictions.length > 0) {
+        await this.analyzePredictionAccuracy(movement, existingPredictions);
+      }
+      
+      // 5. Find related stocks that moved similarly
+      const relatedMovements = await this.findRelatedMovements(movement);
+      
+      // 6. Update learning system with retrospective insights
+      await this.updateLearningSystemWithRetrospectiveData(
+        movement,
+        precedingNews,
+        existingPredictions,
+        relatedMovements
+      );
+      
+    } catch (error) {
+      this.logger.error(`Error analyzing movement ${movement.symbol}:`, error);
+    }
+  }
+
+  /**
+   * Find news that preceded a significant movement
+   */
+  private async findPrecedingNews(movement: any): Promise<any[]> {
+    // Look for news 24-48 hours before the movement
+    const lookbackStart = new Date(movement.startTime);
+    lookbackStart.setHours(lookbackStart.getHours() - 48);
+    
+    const lookbackEnd = new Date(movement.startTime);
+    lookbackEnd.setHours(lookbackEnd.getHours() - 1);
+    
+    // Find news mentioning this stock
+    const stockMentions = await this.reliabilityService.findByStockAndDateRange(
+      movement.symbol,
+      lookbackStart,
+      lookbackEnd
+    );
+    
+    // Also find news that might be related (same sector, similar keywords)
+    const relatedNews = await this.findRelatedNews(movement, lookbackStart, lookbackEnd);
+    
+    return [...stockMentions.map(m => m.article), ...relatedNews];
+  }
+
+  /**
+   * Find news related to the movement (same sector, keywords)
+   */
+  private async findRelatedNews(movement: any, startDate: Date, endDate: Date): Promise<any[]> {
+    // TODO: Implement related news finding logic
+    // - Same sector stocks
+    // - Similar keywords in news
+    // - Market-wide news that could affect this stock
+    return [];
+  }
+
+  /**
+   * Find existing predictions for this movement
+   */
+  private async findExistingPredictions(movement: any): Promise<any[]> {
+    const lookbackStart = new Date(movement.startTime);
+    lookbackStart.setHours(lookbackStart.getHours() - 24);
+    
+    return await this.reliabilityService.findByStockAndDateRange(
+      movement.symbol,
+      lookbackStart,
+      movement.startTime
+    );
+  }
+
+  /**
+   * Analyze missed opportunities
+   */
+  private async analyzeMissedOpportunity(movement: any, precedingNews: any[]): Promise<void> {
+    this.logger.log(`Missed opportunity: ${movement.symbol} moved ${movement.changePercent}% but no prediction was made`);
+    
+    // Analyze why we missed this opportunity
+    const analysis = {
+      stockSymbol: movement.symbol,
+      movementPercent: movement.changePercent,
+      precedingNewsCount: precedingNews.length,
+      newsCategories: [...new Set(precedingNews.map(n => n.mainCategory))],
+      newsSentiments: precedingNews.map(n => n.sentimentScore),
+      averageSentiment: precedingNews.reduce((sum, n) => sum + (n.sentimentScore || 0), 0) / precedingNews.length,
+      missedReasons: await this.identifyMissedReasons(precedingNews),
+    };
+    
+    // Save missed opportunity analysis
+    await this.saveMissedOpportunityAnalysis(analysis);
+    
+    // Update learning system
+    await this.learningSystem.updateWithMissedOpportunity(analysis);
+  }
+
+  /**
+   * Identify reasons why we missed the opportunity
+   */
+  private async identifyMissedReasons(news: any[]): Promise<string[]> {
+    const reasons: string[] = [];
+    
+    // Check if news had stock mentions
+    const hasStockMentions = news.some(n => n.stockMentions && n.stockMentions.length > 0);
+    if (!hasStockMentions) {
+      reasons.push('No direct stock mentions in news');
+    }
+    
+    // Check sentiment strength
+    const avgSentiment = news.reduce((sum, n) => sum + Math.abs(n.sentimentScore || 0), 0) / news.length;
+    if (avgSentiment < 0.3) {
+      reasons.push('Weak sentiment signals');
+    }
+    
+    // Check impact level
+    const hasHighImpact = news.some(n => n.impactLevel === 'HIGH');
+    if (!hasHighImpact) {
+      reasons.push('No high-impact news detected');
+    }
+    
+    // Check news processing status
+    const unprocessedNews = news.filter(n => n.status !== 'PROCESSED');
+    if (unprocessedNews.length > 0) {
+      reasons.push('Some news not processed in time');
+    }
+    
+    return reasons;
+  }
+
+  /**
+   * Analyze prediction accuracy for existing predictions
+   */
+  private async analyzePredictionAccuracy(movement: any, predictions: any[]): Promise<void> {
+    for (const prediction of predictions) {
+      const accuracy = this.calculateRetrospectiveAccuracy(prediction, movement);
+      
+      this.logger.log(
+        `Retrospective accuracy for ${movement.symbol}: Predicted ${prediction.predictedChangePercent}%, Actual ${movement.changePercent}%, Accuracy: ${accuracy.toFixed(1)}%`
+      );
+      
+      // Update prediction with retrospective accuracy
+      await this.reliabilityService.updateRetrospectiveAccuracy(prediction.id, accuracy);
+    }
+  }
+
+  /**
+   * Calculate retrospective accuracy
+   */
+  private calculateRetrospectiveAccuracy(prediction: any, movement: any): number {
+    const predictedChange = prediction.predictedChangePercent;
+    const actualChange = movement.changePercent;
+    
+    // Direction accuracy (50% weight)
+    const predictedDirection = predictedChange > 0 ? 'UP' : predictedChange < 0 ? 'DOWN' : 'NEUTRAL';
+    const actualDirection = actualChange > 2 ? 'UP' : actualChange < -2 ? 'DOWN' : 'NEUTRAL';
+    const directionAccuracy = predictedDirection === actualDirection ? 100 : 0;
+    
+    // Magnitude accuracy (50% weight)
+    const magnitudeAccuracy = Math.max(0, 100 - Math.abs(predictedChange - actualChange) * 3);
+    
+    return (directionAccuracy * 0.5) + (magnitudeAccuracy * 0.5);
+  }
+
+  /**
+   * Find related movements (similar stocks, same sector)
+   */
+  private async findRelatedMovements(movement: any): Promise<any[]> {
+    // TODO: Implement related movements finding
+    // - Same sector stocks
+    // - Stocks with similar market cap
+    // - Stocks with correlation patterns
+    return [];
+  }
+
+  /**
+   * Update learning system with retrospective data
+   */
+  private async updateLearningSystemWithRetrospectiveData(
+    movement: any,
+    precedingNews: any[],
+    existingPredictions: any[],
+    relatedMovements: any[]
+  ): Promise<void> {
+    const retrospectiveData = {
+      movement,
+      precedingNews,
+      existingPredictions,
+      relatedMovements,
+      analysisDate: new Date(),
+    };
+    
+    await this.learningSystem.updateWithRetrospectiveData(retrospectiveData);
+  }
+
+  /**
+   * Generate retrospective insights
+   */
+  private async generateRetrospectiveInsights(movements: any[]): Promise<void> {
+    const insights = {
+      totalMovements: movements.length,
+      averageMovement: movements.reduce((sum, m) => sum + Math.abs(m.changePercent), 0) / movements.length,
+      topGainers: movements.filter(m => m.changePercent > 0).slice(0, 5),
+      topLosers: movements.filter(m => m.changePercent < 0).slice(0, 5),
+      missedOpportunities: movements.filter(m => m.missedOpportunity).length,
+      predictionAccuracy: await this.calculateOverallPredictionAccuracy(movements),
+    };
+    
+    this.logger.log('Retrospective Insights:', JSON.stringify(insights, null, 2));
+    
+    // Save insights
+    await this.saveRetrospectiveInsights(insights);
+  }
+
+  /**
+   * Calculate overall prediction accuracy
+   */
+  private async calculateOverallPredictionAccuracy(movements: any[]): Promise<number> {
+    let totalAccuracy = 0;
+    let predictionCount = 0;
+    
+    for (const movement of movements) {
+      const predictions = await this.findExistingPredictions(movement);
+      for (const prediction of predictions) {
+        const accuracy = this.calculateRetrospectiveAccuracy(prediction, movement);
+        totalAccuracy += accuracy;
+        predictionCount++;
+      }
+    }
+    
+    return predictionCount > 0 ? totalAccuracy / predictionCount : 0;
+  }
+
+  /**
+   * Save missed opportunity analysis
+   */
+  private async saveMissedOpportunityAnalysis(analysis: any): Promise<void> {
+    // TODO: Implement saving to database
+    this.logger.debug('Saving missed opportunity analysis');
+  }
+
+  /**
+   * Save retrospective insights
+   */
+  private async saveRetrospectiveInsights(insights: any): Promise<void> {
+    // TODO: Implement saving to database
+    this.logger.debug('Saving retrospective insights');
+  }
+}
+```
+
+### 5. News Clustering Service
+
+**File**: `src/modules/stock-prediction/business/services/news-clustering.service.ts`
+
+```typescript
+import { Injectable, Logger } from '@nestjs/common';
+import { NewsService } from '../../news/news.service';
+import { NewsCluster } from '../data/entities/news-cluster.entity';
+import { NewsClusterRepository } from '../data/repositories/news-cluster.repository';
+import { ClusterTypeEnum } from '../contracts/enums/cluster-type.enum';
+
+@Injectable()
+export class NewsClusteringService {
+  private readonly logger = new Logger(NewsClusteringService.name);
+
+  constructor(
+    private readonly newsService: NewsService,
+    private readonly clusterRepository: NewsClusterRepository,
+  ) {}
+
+  /**
+   * Cluster related news articles
+   */
+  async clusterRelatedNews(articleId: number): Promise<void> {
+    try {
+      const article = await this.newsService.findById(articleId);
+      
+      // 1. Find similar articles by content
+      const contentSimilar = await this.findSimilarByContent(article);
+      
+      // 2. Find similar articles by stock mentions
+      const stockSimilar = await this.findSimilarByStockMentions(article);
+      
+      // 3. Find similar articles by time proximity
+      const timeSimilar = await this.findSimilarByTime(article);
+      
+      // 4. Combine and deduplicate
+      const allSimilar = [...new Set([...contentSimilar, ...stockSimilar, ...timeSimilar])];
+      
+      if (allSimilar.length > 1) {
+        // 5. Create or update cluster
+        await this.createOrUpdateCluster(article, allSimilar);
+      }
+      
+    } catch (error) {
+      this.logger.error(`Error clustering news for article ${articleId}:`, error);
+    }
+  }
+
+  /**
+   * Find similar articles by content similarity
+   */
+  private async findSimilarByContent(article: any): Promise<number[]> {
+    // Get articles from the same day
+    const sameDayArticles = await this.newsService.findByDateRange(
+      new Date(article.publishedAt.getTime() - 24 * 60 * 60 * 1000),
+      new Date(article.publishedAt.getTime() + 24 * 60 * 60 * 1000)
+    );
+    
+    const similar: number[] = [];
+    
+    for (const otherArticle of sameDayArticles) {
+      if (otherArticle.id === article.id) continue;
+      
+      // Calculate content similarity
+      const similarity = this.calculateContentSimilarity(article, otherArticle);
+      
+      if (similarity > 0.7) { // 70% similarity threshold
+        similar.push(otherArticle.id);
+      }
+    }
+    
+    return similar;
+  }
+
+  /**
+   * Calculate content similarity between two articles
+   */
+  private calculateContentSimilarity(article1: any, article2: any): number {
+    // Simple keyword-based similarity
+    const keywords1 = this.extractKeywords(article1.title + ' ' + (article1.contentPlain || ''));
+    const keywords2 = this.extractKeywords(article2.title + ' ' + (article2.contentPlain || ''));
+    
+    const intersection = keywords1.filter(k => keywords2.includes(k));
+    const union = [...new Set([...keywords1, ...keywords2])];
+    
+    return union.length > 0 ? intersection.length / union.length : 0;
+  }
+
+  /**
+   * Extract keywords from text
+   */
+  private extractKeywords(text: string): string[] {
+    const stopwords = new Set(['bir', 'bu', 've', 'ile', 'için', 'olan', 'ancak', 'gibi', 'daha', 'çok']);
+    
+    return text
+      .toLowerCase()
+      .match(/\b[a-zçğıöşü]{3,}\b/g) || []
+      .filter(word => !stopwords.has(word))
+      .slice(0, 20); // Top 20 keywords
+  }
+
+  /**
+   * Find similar articles by stock mentions
+   */
+  private async findSimilarByStockMentions(article: any): Promise<number[]> {
+    const stockMentions = await this.newsService.getStockMentions(article.id);
+    
+    if (stockMentions.length === 0) return [];
+    
+    const similar: number[] = [];
+    
+    for (const mention of stockMentions) {
+      // Find other articles mentioning the same stock
+      const relatedArticles = await this.reliabilityService.findByStockAndDateRange(
+        mention.stockSymbol,
+        new Date(article.publishedAt.getTime() - 24 * 60 * 60 * 1000),
+        new Date(article.publishedAt.getTime() + 24 * 60 * 60 * 1000)
+      );
+      
+      similar.push(...relatedArticles.map(r => r.articleId));
+    }
+    
+    return [...new Set(similar)];
+  }
+
+  /**
+   * Find similar articles by time proximity
+   */
+  private async findSimilarByTime(article: any): Promise<number[]> {
+    const timeWindow = 2 * 60 * 60 * 1000; // 2 hours
+    const startTime = new Date(article.publishedAt.getTime() - timeWindow);
+    const endTime = new Date(article.publishedAt.getTime() + timeWindow);
+    
+    const nearbyArticles = await this.newsService.findByDateRange(startTime, endTime);
+    
+    return nearbyArticles
+      .filter(a => a.id !== article.id)
+      .map(a => a.id);
+  }
+
+  /**
+   * Create or update news cluster
+   */
+  private async createOrUpdateCluster(mainArticle: any, similarArticles: number[]): Promise<void> {
+    // Check if main article is already in a cluster
+    const existingCluster = await this.clusterRepository.findByArticleId(mainArticle.id);
+    
+    if (existingCluster) {
+      // Update existing cluster
+      await this.updateCluster(existingCluster, similarArticles);
+    } else {
+      // Create new cluster
+      await this.createNewCluster(mainArticle, similarArticles);
+    }
+  }
+
+  /**
+   * Create new cluster
+   */
+  private async createNewCluster(mainArticle: any, similarArticles: number[]): Promise<void> {
+    const cluster = new NewsCluster();
+    cluster.clusterType = ClusterTypeEnum.CONTENT_SIMILARITY;
+    cluster.mainArticleId = mainArticle.id;
+    cluster.articleIds = JSON.stringify([mainArticle.id, ...similarArticles]);
+    cluster.clusterScore = this.calculateClusterScore(mainArticle, similarArticles);
+    cluster.createdAt = new Date();
+    
+    await this.clusterRepository.save(cluster);
+    
+    this.logger.log(`Created new cluster with ${similarArticles.length + 1} articles`);
+  }
+
+  /**
+   * Update existing cluster
+   */
+  private async updateCluster(cluster: NewsCluster, newArticles: number[]): Promise<void> {
+    const existingArticles = JSON.parse(cluster.articleIds);
+    const allArticles = [...new Set([...existingArticles, ...newArticles])];
+    
+    cluster.articleIds = JSON.stringify(allArticles);
+    cluster.clusterScore = this.calculateClusterScore(cluster.mainArticle, allArticles);
+    cluster.updatedAt = new Date();
+    
+    await this.clusterRepository.save(cluster);
+    
+    this.logger.log(`Updated cluster with ${allArticles.length} articles`);
+  }
+
+  /**
+   * Calculate cluster score
+   */
+  private calculateClusterScore(mainArticle: any, articleIds: number[]): number {
+    // Simple scoring based on article count and similarity
+    return Math.min(100, articleIds.length * 20);
+  }
+}
+```
+
+### 6. Daily Report Service
 
 **File**: `src/modules/stock-prediction/business/services/daily-report.service.ts`
 
@@ -1090,7 +1685,7 @@ export class DailyReportService {
 }
 ```
 
-### 5. Entity Definitions
+### 7. Entity Definitions
 
 **File**: `src/modules/stock-prediction/data/entities/prediction-rule.entity.ts`
 
@@ -1135,7 +1730,67 @@ export class DailyReport {
 }
 ```
 
-### 6. Enums
+**File**: `src/modules/stock-prediction/data/entities/news-cluster.entity.ts`
+
+```typescript
+import { AutoEntity } from '../../../../common/decorators/auto-entity.decorator';
+
+@AutoEntity()
+export class NewsCluster {
+  id: number;
+  clusterType: string; // 'CONTENT_SIMILARITY', 'STOCK_MENTION', 'TIME_PROXIMITY'
+  mainArticleId: number;
+  articleIds: string; // JSON array of article IDs
+  clusterScore: number; // 0-100 confidence score
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+**File**: `src/modules/stock-prediction/data/entities/retrospective-analysis.entity.ts`
+
+```typescript
+import { AutoEntity } from '../../../../common/decorators/auto-entity.decorator';
+
+@AutoEntity()
+export class RetrospectiveAnalysis {
+  id: number;
+  stockSymbol: string;
+  movementPercent: number;
+  analysisDate: Date;
+  movementStartTime: Date;
+  movementEndTime: Date;
+  precedingNewsCount: number;
+  existingPredictionsCount: number;
+  missedOpportunity: boolean;
+  missedReasons: string; // JSON array of reasons
+  retrospectiveAccuracy: number;
+  analysisData: any; // JSON data containing full analysis
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+**File**: `src/modules/stock-prediction/data/entities/pattern-recognition.entity.ts`
+
+```typescript
+import { AutoEntity } from '../../../../common/decorators/auto-entity.decorator';
+
+@AutoEntity()
+export class PatternRecognition {
+  id: number;
+  patternType: string; // 'TIME_BASED', 'SECTOR_CORRELATION', 'VOLUME_PATTERN'
+  patternData: any; // JSON data containing pattern details
+  confidence: number; // 0-100 confidence score
+  occurrences: number; // How many times this pattern occurred
+  accuracy: number; // Prediction accuracy when this pattern is present
+  lastSeen: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### 8. Enums
 
 **File**: `src/modules/stock-prediction/contracts/enums/rule-type.enum.ts`
 
@@ -1148,6 +1803,7 @@ export enum RuleTypeEnum {
   TIME_OF_DAY = 'TIME_OF_DAY',
   DAY_OF_WEEK = 'DAY_OF_WEEK',
   MARKET_CONDITION = 'MARKET_CONDITION',
+  CLUSTER_TYPE = 'CLUSTER_TYPE',
 }
 ```
 
@@ -1163,43 +1819,93 @@ export enum PredictionStatusEnum {
 }
 ```
 
+**File**: `src/modules/stock-prediction/contracts/enums/learning-mode.enum.ts`
+
+```typescript
+export enum LearningModeEnum {
+  PREDICTIVE = 'PREDICTIVE',     // Learning from predictions
+  RETROSPECTIVE = 'RETROSPECTIVE', // Learning from missed opportunities
+  PATTERN_BASED = 'PATTERN_BASED', // Learning from patterns
+  HYBRID = 'HYBRID',             // Combined learning approach
+}
+```
+
+**File**: `src/modules/stock-prediction/contracts/enums/cluster-type.enum.ts`
+
+```typescript
+export enum ClusterTypeEnum {
+  CONTENT_SIMILARITY = 'CONTENT_SIMILARITY',
+  STOCK_MENTION = 'STOCK_MENTION',
+  TIME_PROXIMITY = 'TIME_PROXIMITY',
+  SECTOR_RELATED = 'SECTOR_RELATED',
+  EVENT_BASED = 'EVENT_BASED',
+}
+```
+
+**File**: `src/modules/stock-prediction/contracts/enums/insight-type.enum.ts`
+
+```typescript
+export enum InsightTypeEnum {
+  MISSED_OPPORTUNITY = 'MISSED_OPPORTUNITY',
+  PATTERN_DISCOVERY = 'PATTERN_DISCOVERY',
+  ACCURACY_IMPROVEMENT = 'ACCURACY_IMPROVEMENT',
+  SOURCE_RELIABILITY = 'SOURCE_RELIABILITY',
+  MARKET_CONDITION = 'MARKET_CONDITION',
+  CORRELATION_FOUND = 'CORRELATION_FOUND',
+}
+```
+
 ---
 
 ## 🚀 Implementation Phases
 
-### Phase 1: Core Infrastructure (2-3 days)
+### Phase 1: Core Infrastructure (3-4 days)
 - [ ] Create `stock-prediction` module structure
-- [ ] Implement `PredictionEngineService`
+- [ ] Implement `PredictionEngineService` with multi-source support
 - [ ] Implement `ActualImpactTrackerService`
 - [ ] Create basic entities and schemas
 - [ ] Set up database migrations
+- [ ] Add news clustering capabilities
 
-### Phase 2: Learning System (3-4 days)
+### Phase 2: Learning System (4-5 days)
 - [ ] Implement `LearningSystemService`
+- [ ] Implement `RetrospectiveLearningService`
 - [ ] Create `PredictionRule` entity and repository
 - [ ] Implement rule-based learning algorithms
 - [ ] Add pattern analysis capabilities
 - [ ] Test learning system with sample data
 
-### Phase 3: Reporting System (2-3 days)
+### Phase 3: Advanced Analysis (3-4 days)
+- [ ] Implement `NewsClusteringService`
+- [ ] Implement `PatternRecognitionService`
+- [ ] Add multi-source news correlation
+- [ ] Implement missed opportunity analysis
+- [ ] Add retrospective learning algorithms
+- [ ] Test advanced analysis features
+
+### Phase 4: Reporting System (2-3 days)
 - [ ] Implement `DailyReportService`
 - [ ] Create daily analysis reports
 - [ ] Add insights generation
 - [ ] Implement recommendations engine
 - [ ] Create report storage system
+- [ ] Add retrospective insights
 
-### Phase 4: Integration & Testing (2-3 days)
+### Phase 5: Integration & Testing (3-4 days)
 - [ ] Integrate with existing modules
 - [ ] Add API endpoints
 - [ ] Implement error handling
 - [ ] Add comprehensive logging
 - [ ] End-to-end testing
+- [ ] Performance optimization
 
-### Phase 5: Dashboard Integration (1-2 days)
+### Phase 6: Dashboard Integration (2-3 days)
 - [ ] Add prediction data to dashboard
 - [ ] Create prediction accuracy charts
 - [ ] Add daily report views
 - [ ] Implement real-time updates
+- [ ] Add retrospective analysis views
+- [ ] Create learning progress indicators
 
 ---
 
@@ -1307,6 +2013,39 @@ DAILY_REPORT_ENABLED=true
 ---
 
 **Document Status**: Ready for Implementation  
-**Estimated Timeline**: 10-15 days  
+**Estimated Timeline**: 17-23 days  
 **Priority**: High  
 **Dependencies**: OpenAI API, existing modules (news, stock-prices, news-reliability)
+
+---
+
+## 🔄 Key Improvements Made
+
+### **1. Dual-Loop Learning Architecture**
+- **Prediction Loop**: Real-time learning from predictions
+- **Retrospective Loop**: Learning from missed opportunities and market movements
+
+### **2. Multi-Source News Handling**
+- **News Clustering**: Groups related news from multiple sources
+- **Content Similarity**: Identifies duplicate/similar news
+- **Time Proximity**: Groups news by time windows
+
+### **3. Retrospective Learning**
+- **Missed Opportunity Analysis**: Analyzes why predictions were missed
+- **Backward News Analysis**: Finds news that preceded movements
+- **Pattern Recognition**: Discovers hidden correlations
+
+### **4. Enhanced Learning System**
+- **Multiple Learning Modes**: Predictive, retrospective, pattern-based
+- **Advanced Pattern Recognition**: Time-based, sector correlation, volume patterns
+- **Comprehensive Rule Updates**: Category, sentiment, impact, source-based rules
+
+### **5. Holistic Analysis**
+- **Related Stock Analysis**: Finds stocks affected by same news
+- **Sector Correlation**: Analyzes sector-wide movements
+- **Market Condition Adaptation**: Adjusts to market volatility
+
+### **6. Advanced Reporting**
+- **Retrospective Insights**: Analysis of missed opportunities
+- **Learning Progress**: Tracks system improvement over time
+- **Pattern Discovery**: Reports on new patterns found
