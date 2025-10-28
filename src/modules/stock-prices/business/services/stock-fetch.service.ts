@@ -14,13 +14,6 @@ export class StockFetchService {
   async fetchAndSaveStocks(): Promise<{ saved: number; errors: number; skipped: number }> {
     this.validateApiConfiguration();
 
-    // Check if we should skip API call entirely
-    const shouldSkipApiCall = await this.shouldSkipApiCall();
-    if (shouldSkipApiCall) {
-      this.logger.log('⏭️ Skipping API call - no new data expected');
-      return { saved: 0, errors: 0, skipped: 0 };
-    }
-
     const stockData = await this.bistApiService.fetchBist100Prices();
     
     if (stockData.length === 0) {
@@ -51,31 +44,6 @@ export class StockFetchService {
     }
 
     return { saved, errors, skipped: 0 };
-  }
-
-  private async shouldSkipApiCall(): Promise<boolean> {
-    // Get the most recent fetch time from database
-    const latestStocks = await this.stockPricesService.findAllLatest();
-    
-    if (latestStocks.length === 0) {
-      // No data in database, should call API
-      return false;
-    }
-    
-    // Find the most recent fetchedAt time
-    const mostRecentFetch = latestStocks.reduce((latest, stock) => {
-      return stock.fetchedAt > latest ? stock.fetchedAt : latest;
-    }, latestStocks[0].fetchedAt);
-    
-    // If we fetched data less than 12 minutes ago, skip API call (safety margin for 15-min schedule)
-    const twelveMinutesAgo = new Date(Date.now() - 12 * 60 * 1000);
-    const shouldSkip = mostRecentFetch > twelveMinutesAgo;
-    
-    if (shouldSkip) {
-      this.logger.debug(`Skipping API call - last fetch was ${mostRecentFetch.toISOString()}, less than 12 minutes ago`);
-    }
-    
-    return shouldSkip;
   }
 
   private async shouldSaveAllStocks(apiLastUpdate: Date): Promise<boolean> {

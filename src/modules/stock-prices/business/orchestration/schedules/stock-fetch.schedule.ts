@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CronExpression } from '@nestjs/schedule';
 import { StockFetchService } from '../../services/stock-fetch.service';
 import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.interface';
 
