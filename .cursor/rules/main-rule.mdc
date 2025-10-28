@@ -42,6 +42,7 @@ src/
 │   │   ├── data/                    # 🔷 Data Layer (.NET: DataAccess)
 │   │   │   ├── entities/            # Domain entities
 │   │   │   ├── repositories/        # Data access implementations
+│   │   │   │   └── *.queries.ts    # SQL query scripts (raw SQL)
 │   │   │   └── schemas/             # TypeORM schemas
 │   │   └── contracts/               # 🔷 Contracts (.NET: Contracts)
 │   │       ├── requests/            # Input DTOs
@@ -65,6 +66,7 @@ src/
 - Controllers: `[entity].controller.ts`
 - Services: `[entity].service.ts`
 - Repositories: `[entity].repository.ts`
+- Query Scripts: `[entity].queries.ts` (raw SQL scripts)
 - Entities: `[entity].entity.ts`
 - DTOs: `[action]-[entity].dto.ts` (e.g., `save-rss-source.dto.ts`)
 - Responses: `[entity]-response.dto.ts`, `[entity]-list-response.dto.ts`
@@ -133,6 +135,59 @@ export abstract class BaseRepository<T extends ObjectLiteral> {
   async findWithPagination(criteriaDto: CriteriaDto): Promise<{ entities: T[]; totalCount: number }>
 }
 ```
+
+### 4. SQL Query Scripts Pattern
+For performance-critical operations, use centralized SQL query scripts:
+
+```typescript
+// [entity].queries.ts
+export const SQLQueries = {
+  findBySymbolAndDateRange: `
+    SELECT 
+        sp.id,
+        sp.stock_symbol,
+        sp.stock_name,
+        sp.open,
+        sp.close,
+        sp.high,
+        sp.low,
+        sp.last,
+        sp.daily_change_price,
+        sp.daily_change_percent,
+        sp.volume_turkish_lira,
+        sp.volume_lot,
+        sp.volatility,
+        sp.exchange,
+        sp.currency,
+        sp.last_update,
+        sp.fetched_at,
+        sp.created_at,
+        sp.updated_at
+    FROM stock_prices sp
+    WHERE sp.stock_symbol = $1
+      AND sp.last_update BETWEEN $2 AND $3
+    ORDER BY sp.last_update ASC
+  ` as const,
+} as const;
+
+// Usage in repository
+async findBySymbolAndDateRange(
+  symbol: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<StockPrice[]> {
+  return await this.repository.query(
+    SQLQueries.findBySymbolAndDateRange,
+    [symbol, startDate, endDate]
+  );
+}
+```
+
+**Benefits:**
+- **Performance**: Raw SQL is faster than TypeORM QueryBuilder
+- **Centralized**: All SQL scripts in one place for easy maintenance
+- **Type Safety**: Maintains TypeScript return types
+- **Security**: Parameterized queries prevent SQL injection
 
 ## Project Modules Description and Purpose
 
@@ -514,6 +569,9 @@ export class RssSourcesModule implements OnModuleInit {
 - Add custom query methods as needed
 - Use TypeORM decorators for database mapping
 - Keep repositories focused on data access
+- **For Performance**: Use SQL query scripts (`*.queries.ts`) for complex queries
+- **Query Scripts**: Store raw SQL in `[entity].queries.ts` files with `as const` typing
+- **Parameterized Queries**: Always use parameter placeholders (`$1`, `$2`, etc.) for security
 
 ### 3. Naming Conventions
 
@@ -613,6 +671,7 @@ export class RssSourcesModule implements OnModuleInit {
    - Extend `BaseRepository`
    - Add custom query methods as needed
    - Inject TypeORM repository
+   - **For Performance**: Create `[entity].queries.ts` with SQL scripts
 
 6. **Create Service**
    - Implement business logic
