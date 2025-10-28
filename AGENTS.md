@@ -554,20 +554,6 @@ export class RssSourcesModule implements OnModuleInit {
 - Explain non-obvious implementation decisions
 - Keep documentation up-to-date
 
-### 6. Testing Rules
-
-#### Unit Tests
-- Test business logic in services
-- Mock dependencies appropriately
-- Test error scenarios
-- Maintain high test coverage
-
-#### Integration Tests
-- Test API endpoints
-- Test database operations
-- Test error handling
-- Test validation rules
-
 ### 7. Performance Rules
 
 #### Database Operations
@@ -654,7 +640,6 @@ export class RssSourcesModule implements OnModuleInit {
 - ✅ Implement proper error handling
 - ✅ Add comprehensive validation
 - ✅ Include Swagger documentation
-- ✅ Write unit tests
 - ✅ Follow Clean Architecture principles
 - ✅ Use TypeScript features effectively
 - ✅ Apply DRY principle
