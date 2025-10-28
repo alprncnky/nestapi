@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NewsService } from '../../../news/business/services/news.service';
 import { StockPricesService } from '../../../stock-prices/business/services/stock-prices.service';
 import { NewsReliabilityService } from '../../../news-reliability/business/services/news-reliability.service';
-import { OpenAIService } from '../../../../common/services/openai.service';
+import { OpenAIService } from './openai.service';
 import { PredictionImpactEnum } from '../../contracts/enums/prediction-impact.enum';
 import { PredictionRuleRepository } from '../../data/repositories/prediction-rule.repository';
 import { RuleTypeEnum } from '../../contracts/enums/rule-type.enum';

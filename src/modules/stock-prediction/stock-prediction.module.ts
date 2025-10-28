@@ -24,6 +24,7 @@ import { RetrospectiveLearningSchedule } from './business/orchestration/schedule
 import { DailyLearningReportSchedule } from './business/orchestration/schedules/daily-learning-report.schedule';
 import { NewsClusteringSchedule } from './business/orchestration/schedules/news-clustering.schedule';
 import { DailyAnalysisSchedule } from './business/orchestration/schedules/daily-analysis.schedule';
+import { OpenAIService } from './business/services/openai.service';
 import { BaseSchedulerService } from '../../common/services/base-scheduler.service';
 import { NewsModule } from '../news/news.module';
 import { StockPricesModule } from '../stock-prices/stock-prices.module';
@@ -54,6 +55,7 @@ import { NewsReliabilityModule } from '../news-reliability/news-reliability.modu
     NewsClusteringService,
     PatternRecognitionService,
     DailyReportService,
+    OpenAIService,
     
     // Repositories
     PredictionRuleRepository,
@@ -79,6 +81,7 @@ import { NewsReliabilityModule } from '../news-reliability/news-reliability.modu
     NewsClusteringService,
     PatternRecognitionService,
     DailyReportService,
+    OpenAIService,
     
     // Repositories for other modules
     PredictionRuleRepository,
