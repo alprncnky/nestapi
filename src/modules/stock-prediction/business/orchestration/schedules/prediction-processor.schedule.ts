@@ -7,12 +7,12 @@ import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.
  * Prediction Processor Schedule - Orchestration Layer
  * 
  * Coordinates the prediction processing for new articles.
- * Runs every 15 minutes to process recent articles.
+ * Runs every hour at :15 minutes past the hour to process articles fetched by RSS.
  */
 @Injectable()
 export class PredictionProcessorSchedule implements IScheduledTask {
   readonly name = 'PredictionProcessorSchedule';
-  readonly schedule = CronExpression.EVERY_5_MINUTES;
+  readonly schedule = '0 15 * * * *'; // Every hour at :15 minutes past
 
   private readonly logger = new Logger(PredictionProcessorSchedule.name);
 

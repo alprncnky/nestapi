@@ -7,12 +7,12 @@ import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.
  * Daily Learning Report Schedule - Orchestration Layer
  * 
  * Coordinates the generation of daily learning reports.
- * Runs every day at 6 PM to generate insights and recommendations.
+ * Runs every day at 6:30 PM to generate insights and recommendations (30 min after DailyAnalysisSchedule).
  */
 @Injectable()
 export class DailyLearningReportSchedule implements IScheduledTask {
   readonly name = 'DailyLearningReportSchedule';
-  readonly schedule = CronExpression.EVERY_DAY_AT_6PM;
+  readonly schedule = '0 30 18 * * *'; // 6:30 PM daily
 
   private readonly logger = new Logger(DailyLearningReportSchedule.name);
 

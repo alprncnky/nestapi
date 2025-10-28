@@ -9,12 +9,12 @@ import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.
  * RSS Fetch Schedule - Orchestration Layer
  * 
  * Coordinates the RSS fetching process across all active sources.
- * Runs every minute to check for new articles.
+ * Runs every 30 minutes to check for new articles.
  */
 @Injectable()
 export class RssFetchSchedule implements IScheduledTask {
   readonly name = 'RssFetchSchedule';
-  readonly schedule = CronExpression.EVERY_5_MINUTES;
+  readonly schedule = CronExpression.EVERY_30_MINUTES;
 
   private readonly logger = new Logger(RssFetchSchedule.name);
 

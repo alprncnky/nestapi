@@ -7,12 +7,12 @@ import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.
  * Actual Impact Tracker Schedule - Orchestration Layer
  * 
  * Coordinates the evaluation of pending predictions against actual stock performance.
- * Runs every 30 minutes to check prediction accuracy.
+ * Runs every hour at :45 minutes past the hour to check predictions created at :15.
  */
 @Injectable()
 export class ActualImpactTrackerSchedule implements IScheduledTask {
   readonly name = 'ActualImpactTrackerSchedule';
-  readonly schedule = CronExpression.EVERY_30_MINUTES;
+  readonly schedule = '0 45 * * * *'; // Every hour at :45 minutes past
 
   private readonly logger = new Logger(ActualImpactTrackerSchedule.name);
 
