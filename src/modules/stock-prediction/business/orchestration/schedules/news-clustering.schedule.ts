@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
 import { NewsClusteringService } from '../../services/news-clustering.service';
 import { NewsService } from '../../../../news/business/services/news.service';
+import { NewsStatusEnum } from '../../../../news/contracts/enums/news-status.enum';
 import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.interface';
 
 /**
@@ -27,33 +28,48 @@ export class NewsClusteringSchedule implements IScheduledTask {
     const startTime = Date.now();
 
     try {
-      // Get articles from the last 24 hours
-      const recentArticles = await this.newsService.findByDateRange(
-        new Date(Date.now() - 24 * 60 * 60 * 1000),
-        new Date()
+      // Get PENDING articles from the last 24 hours
+      const pendingArticles = await this.newsService.findByStatus(NewsStatusEnum.PENDING);
+      
+      // Filter to only articles from the last 24 hours
+      const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const recentPendingArticles = pendingArticles.filter(
+        article => article.publishedAt >= cutoffDate
       );
 
-      this.logger.log(`Processing ${recentArticles.length} recent articles for clustering`);
+      this.logger.log(`Processing ${recentPendingArticles.length} pending articles for clustering`);
 
       let clusteredCount = 0;
+      let processedCount = 0;
       let errorCount = 0;
 
-      for (const article of recentArticles) {
+      for (const article of recentPendingArticles) {
         try {
+          // Mark as PROCESSING before clustering
+          await this.newsService.updateStatus(article.id, NewsStatusEnum.PROCESSING);
+          
+          // Perform clustering
           await this.newsClusteringService.clusterRelatedNews(article.id);
+          
+          // Mark as PROCESSED after successful clustering
+          await this.newsService.updateStatus(article.id, NewsStatusEnum.PROCESSED);
+          
           clusteredCount++;
+          processedCount++;
           
           // Small delay to avoid overwhelming the system
           await this.delay(100);
         } catch (error) {
           this.logger.error(`Error clustering article ${article.id}:`, error);
           errorCount++;
+          // Optionally mark as FAILED if needed
+          // await this.newsService.updateStatus(article.id, NewsStatusEnum.FAILED);
         }
       }
       
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
       this.logger.log(`✅ News clustering job completed in ${duration}s`);
-      this.logger.log(`📊 Summary: ${clusteredCount} articles clustered, ${errorCount} errors`);
+      this.logger.log(`📊 Summary: ${clusteredCount} articles clustered, ${processedCount} marked as PROCESSED, ${errorCount} errors`);
     } catch (error) {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
       this.logger.error(`❌ News clustering job failed after ${duration}s: ${error.message}`, error.stack);
