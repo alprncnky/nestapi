@@ -8,20 +8,21 @@ This document provides a comprehensive overview of all scheduled tasks in the In
 
 ### Hourly Execution Pattern
 
-| Time | Schedule | Frequency | Duration | Purpose |
-|------|----------|-----------|----------|---------|
-| `:00` | **RssFetchSchedule** | Every 30 min | ~2-5 min | Fetch RSS feeds from all sources |
-| `:00` | **StockFetchSchedule** | Every 15 min | ~1-3 min | Fetch BIST100 stock prices |
-| `:05` | **ArticleProcessorSchedule** | Every hour | ~5-15 min | Process PENDING articles (sentiment, categorization, stock extraction) |
-| `:10` | **NewsClusteringSchedule** | Every hour | ~3-8 min | Cluster related news articles (after ArticleProcessor) |
-| `:15` | **PredictionProcessorSchedule** | Every hour | ~5-15 min | Generate AI predictions (cluster-aware, multi-source) |
-| `:15` | **StockFetchSchedule** | Every 15 min | ~1-3 min | Fetch BIST100 stock prices |
-| `:30` | **RssFetchSchedule** | Every 30 min | ~2-5 min | Fetch RSS feeds from all sources |
-| `:30` | **StockFetchSchedule** | Every 15 min | ~1-3 min | Fetch BIST100 stock prices |
-| `:35` | **ArticleProcessorSchedule** | Every hour | ~5-15 min | Process PENDING articles (sentiment, categorization, stock extraction) |
-| `:40` | **NewsClusteringSchedule** | Every hour | ~3-8 min | Cluster related news articles (after ArticleProcessor) |
-| `:45` | **ActualImpactTrackerSchedule** | Every hour | ~3-10 min | Evaluate prediction accuracy |
-| `:45` | **StockFetchSchedule** | Every 15 min | ~1-3 min | Fetch BIST100 stock prices |
+**Note**: BIST100 market hours: Monday-Friday, 09:00-18:00 (Turkey time, UTC+3)
+Jobs marked with ⏸️ skip execution during market closed hours.
+
+| Time | Schedule | Frequency | Duration | Purpose | Market Hours |
+|------|----------|-----------|----------|---------|--------------|
+| `:00` | **RssFetchSchedule** | Every 30 min | ~2-5 min | Fetch RSS feeds from all sources | ✅ Always |
+| `:00` | **StockFetchSchedule** ⏸️ | Every 30 min | ~1-3 min | Fetch BIST100 stock prices | ⏸️ 09:00-18:00 only |
+| `:05` | **ArticleProcessorSchedule** | Every hour | ~5-15 min | Process PENDING articles | ✅ Always |
+| `:10` | **NewsClusteringSchedule** | Every hour | ~3-8 min | Cluster related news articles | ✅ Always |
+| `:15` | **PredictionProcessorSchedule** | Every hour | ~5-15 min | Generate AI predictions | ✅ Always |
+| `:30` | **RssFetchSchedule** | Every 30 min | ~2-5 min | Fetch RSS feeds from all sources | ✅ Always |
+| `:30` | **StockFetchSchedule** ⏸️ | Every 30 min | ~1-3 min | Fetch BIST100 stock prices | ⏸️ 09:00-18:00 only |
+| `:35` | **ArticleProcessorSchedule** | Every hour | ~5-15 min | Process PENDING articles | ✅ Always |
+| `:40` | **NewsClusteringSchedule** | Every hour | ~3-8 min | Cluster related news articles | ✅ Always |
+| `:45` | **ActualImpactTrackerSchedule** ⏸️ | Every hour | ~3-10 min | Evaluate prediction accuracy | ⏸️ 09:00-20:00 only |
 
 ### Daily Execution Pattern
 
@@ -64,6 +65,7 @@ RssFetchSchedule → ArticleProcessorSchedule → NewsClusteringSchedule → Pre
 - ✅ **Complete Pipeline**: Articles properly processed with stock symbol extraction and clustering
 - ✅ **Multi-Source Support**: Clusters ready before predictions for enhanced accuracy
 - ✅ **API Optimization**: RSS fetching reduced to reasonable 30-minute intervals
+- ✅ **Market Hours Aware**: Stock-related jobs skip execution during market closed hours, reducing unnecessary API calls
 - ✅ **Predictable Execution**: Easy to monitor and debug
 
 ## 🕐 Detailed Schedule Configuration
@@ -88,9 +90,12 @@ readonly schedule = '0 5,35 * * * *';
 ### Stock Prices Module  
 ```typescript
 // StockFetchSchedule
-readonly schedule = '0 */15 * * * *';
-// Runs at: :00, :15, :30, :45 of every hour
+readonly schedule = '0 */30 * * * *';
+// Runs at: :00 and :30 of every hour
 // Purpose: Fetch BIST100 stock prices from API
+// Market Hours: Only executes during BIST trading hours (09:00-18:00, weekdays)
+// Skipped: Automatically skipped outside market hours to avoid unnecessary API calls
+// Frequency: Optimized to 30-minute intervals (reduced from 15 minutes for better resource efficiency)
 ```
 
 ### Stock Prediction Module
@@ -104,6 +109,8 @@ readonly schedule = '0 15 * * * *';
 readonly schedule = '0 45 * * * *';
 // Runs at: :45 of every hour
 // Purpose: Evaluate prediction accuracy against actual results
+// Market Hours: Executes during 09:00-20:00 to allow evaluation of end-of-day predictions
+// Skipped: Automatically skipped outside evaluation window (20:00-09:00)
 
 // NewsClusteringSchedule
 readonly schedule = '0 10,40 * * * *';
@@ -190,6 +197,9 @@ readonly schedule = CronExpression.EVERY_DAY_AT_7PM;
 ---
 
 **Last Updated**: 2025-01-26  
-**Version**: 1.1  
+**Version**: 1.3  
 **Status**: Production Ready  
-**Changes**: Updated NewsClusteringSchedule timing to run after ArticleProcessorSchedule for proper dependency chain
+**Changes**: 
+- Updated NewsClusteringSchedule timing to run after ArticleProcessorSchedule for proper dependency chain
+- Added market hours awareness: StockFetchSchedule and ActualImpactTrackerSchedule now skip execution during market closed hours (BIST: 09:00-18:00, weekdays)
+- Optimized StockFetchSchedule frequency: Reduced from 15 minutes to 30 minutes for better resource efficiency

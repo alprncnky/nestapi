@@ -25,16 +25,15 @@ RSS Sources → News Articles → Article Processing → Stock Predictions → I
 | Zaman | Job Adı | Sıklık | Süre | Bağımlılıklar |
 |-------|---------|--------|------|---------------|
 | `:00` | **RssFetchSchedule** | Her 30 dakika | ~2-5 dk | - |
-| `:00` | **StockFetchSchedule** | Her 15 dakika | ~1-3 dk | - |
-| `:00` | **NewsClusteringSchedule** | Her saat | ~3-8 dk | ArticleProcessorSchedule |
+| `:00` | **StockFetchSchedule** ⏸️ | Her 30 dakika | ~1-3 dk | - |
 | `:05` | **ArticleProcessorSchedule** | Her saat | ~5-15 dk | RssFetchSchedule |
+| `:10` | **NewsClusteringSchedule** | Her saat | ~3-8 dk | ArticleProcessorSchedule |
 | `:15` | **PredictionProcessorSchedule** | Her saat | ~5-15 dk | ArticleProcessorSchedule |
-| `:15` | **StockFetchSchedule** | Her 15 dakika | ~1-3 dk | - |
 | `:30` | **RssFetchSchedule** | Her 30 dakika | ~2-5 dk | - |
-| `:30` | **StockFetchSchedule** | Her 15 dakika | ~1-3 dk | - |
+| `:30` | **StockFetchSchedule** ⏸️ | Her 30 dakika | ~1-3 dk | - |
 | `:35` | **ArticleProcessorSchedule** | Her saat | ~5-15 dk | RssFetchSchedule |
-| `:45` | **ActualImpactTrackerSchedule** | Her saat | ~3-10 dk | PredictionProcessorSchedule, StockFetchSchedule |
-| `:45` | **StockFetchSchedule** | Her 15 dakika | ~1-3 dk | - |
+| `:40` | **NewsClusteringSchedule** | Her saat | ~3-8 dk | ArticleProcessorSchedule |
+| `:45` | **ActualImpactTrackerSchedule** ⏸️ | Her saat | ~3-10 dk | PredictionProcessorSchedule, StockFetchSchedule |
 
 ### Günlük Çalışma Paterni
 
@@ -136,7 +135,7 @@ RSS Sources → News Articles → Article Processing → Stock Predictions → I
 
 **Dosya**: `src/modules/stock-prices/business/orchestration/schedules/stock-fetch.schedule.ts`
 
-**Zaman Planı**: Her 15 dakikada bir (`:00`, `:15`, `:30`, `:45`)
+**Zaman Planı**: Her 30 dakikada bir (`:00` ve `:30`)
 
 **Amaç**: BIST100 API'sinden güncel hisse senedi fiyatlarını çekmek ve veritabanına kaydetmek.
 
@@ -641,13 +640,18 @@ Her job aşağıdaki formatı kullanır:
 ## 📝 Son Güncelleme
 
 **Son Güncelleme**: 2025-01-26  
-**Versiyon**: 1.1  
-**Durum**: Production Ready (Source-based weighted learning implemented)
+**Versiyon**: 1.2  
+**Durum**: Production Ready (Source-based weighted learning implemented, StockFetchSchedule optimized)
 
 ---
 
 ## 🔄 Değişiklik Geçmişi
 
+- **v1.2** (2025-01-26): StockFetchSchedule optimizasyonu
+  - StockFetchSchedule sıklığı 15 dakikadan 30 dakikaya çıkarıldı
+  - Market hours awareness eklendi (borsa kapalıyken skip)
+  - API çağrıları optimize edildi
+  
 - **v1.1** (2025-01-26): Source-based weighted learning ve multi-source prediction desteği eklendi
   - PredictionProcessorSchedule artık cluster-aware çalışıyor
   - Source-based weighting eklendi (reliability score + rule accuracy)
