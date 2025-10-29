@@ -333,7 +333,7 @@ All endpoints are prefixed with `/api/`
 
 ### 2. Get Predictions List
 - **Method**: `POST`
-- **URL**: `/api/stock-prediction/predictions`
+- **URL**: `/api/stock-prediction/getlist`
 - **Description**: Retrieve paginated list of predictions with sorting support
 
 **Request Schema**: CriteriaDto (same as RSS Sources getlist)

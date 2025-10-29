@@ -14,7 +14,7 @@ export class NewsClusterRepository extends BaseRepository<NewsCluster> {
   async findByArticleId(articleId: number): Promise<NewsCluster | null> {
     return await this.repository
       .createQueryBuilder('cluster')
-      .where('JSON_CONTAINS(cluster.articleIds, :articleId)', { articleId: articleId.toString() })
+      .where('cluster.articleIds @> :articleId', { articleId: JSON.stringify(articleId) })
       .getOne();
   }
 

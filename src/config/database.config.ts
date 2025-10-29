@@ -11,6 +11,11 @@ import { StockMentionSchema } from '../modules/news/data/schemas/stock-mention.s
 import { ExtractedItemSchema } from '../modules/news/data/schemas/extracted-item.schema';
 import { NewsReliabilityTrackingSchema } from '../modules/news-reliability/data/schemas/news-reliability-tracking.schema';
 import { StockPriceSchema } from '../modules/stock-prices/data/schemas/stock-price.schema';
+import { PredictionRuleSchema } from '../modules/stock-prediction/data/schemas/prediction-rule.schema';
+import { DailyReportSchema } from '../modules/stock-prediction/data/schemas/daily-report.schema';
+import { NewsClusterSchema } from '../modules/stock-prediction/data/schemas/news-cluster.schema';
+import { RetrospectiveAnalysisSchema } from '../modules/stock-prediction/data/schemas/retrospective-analysis.schema';
+import { PatternRecognitionSchema } from '../modules/stock-prediction/data/schemas/pattern-recognition.schema';
 
 /**
  * Database configuration factory
@@ -36,6 +41,11 @@ export default registerAs(
       ExtractedItemSchema,
       NewsReliabilityTrackingSchema,
       StockPriceSchema,
+      PredictionRuleSchema,
+      DailyReportSchema,
+      NewsClusterSchema,
+      RetrospectiveAnalysisSchema,
+      PatternRecognitionSchema,
     ],
     synchronize: false, // ⚠️ DISABLED - Use migrations instead!
     logging: process.env.NODE_ENV === 'development',
