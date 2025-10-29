@@ -3,15 +3,15 @@
 This document provides a comprehensive list of all API endpoints available in the InsightAPI system, including request and response schemas.
 
 ## Base URL
-All endpoints are prefixed with `/api/`
+All endpoints are prefixed with `/api/v1/`
 
 ---
 
-## RSS Sources Module (`/api/rss-sources`)
+## RSS Sources Module (`/api/v1/rss-sources`)
 
 ### 1. Save RSS Source (Create/Update)
 - **Method**: `POST`
-- **URL**: `/api/rss-sources/save`
+- **URL**: `/api/v1/rss-sources/save`
 - **Description**: Create a new RSS source or update an existing one
 
 **Request Schema**:
@@ -49,7 +49,7 @@ All endpoints are prefixed with `/api/`
 
 ### 2. Get RSS Source by ID
 - **Method**: `GET`
-- **URL**: `/api/rss-sources/get?id={id}`
+- **URL**: `/api/v1/rss-sources/get?id={id}`
 - **Description**: Retrieve a specific RSS source by ID
 
 **Query Parameters**:
@@ -59,7 +59,7 @@ All endpoints are prefixed with `/api/`
 
 ### 3. Get RSS Sources List
 - **Method**: `POST`
-- **URL**: `/api/rss-sources/getlist`
+- **URL**: `/api/v1/rss-sources/getlist`
 - **Description**: Retrieve paginated list of RSS sources
 
 **Request Schema**:
@@ -97,7 +97,7 @@ All endpoints are prefixed with `/api/`
 
 ### 4. Delete RSS Source
 - **Method**: `DELETE`
-- **URL**: `/api/rss-sources/delete?id={id}`
+- **URL**: `/api/v1/rss-sources/delete?id={id}`
 - **Description**: Delete a specific RSS source
 
 **Query Parameters**:
@@ -112,11 +112,11 @@ All endpoints are prefixed with `/api/`
 
 ---
 
-## News Module (`/api/news`)
+## News Module (`/api/v1/news`)
 
 ### 1. Save News Article (Create/Update)
 - **Method**: `POST`
-- **URL**: `/api/news/save`
+- **URL**: `/api/v1/news/save`
 - **Description**: Create a new news article or update an existing one
 
 **Request Schema**:
@@ -164,7 +164,7 @@ All endpoints are prefixed with `/api/`
 
 ### 2. Get News Article by ID
 - **Method**: `GET`
-- **URL**: `/api/news/get?id={id}`
+- **URL**: `/api/v1/news/get?id={id}`
 - **Description**: Retrieve a specific news article by ID
 
 **Query Parameters**:
@@ -174,7 +174,7 @@ All endpoints are prefixed with `/api/`
 
 ### 3. Get News Articles List
 - **Method**: `POST`
-- **URL**: `/api/news/getlist`
+- **URL**: `/api/v1/news/getlist`
 - **Description**: Retrieve paginated list of news articles
 
 **Request Schema**: Same as RSS Sources getlist (CriteriaDto)
@@ -207,7 +207,7 @@ All endpoints are prefixed with `/api/`
 
 ### 4. Delete News Article
 - **Method**: `DELETE`
-- **URL**: `/api/news/delete?id={id}`
+- **URL**: `/api/v1/news/delete?id={id}`
 - **Description**: Delete a specific news article
 
 **Query Parameters**:
@@ -222,11 +222,11 @@ All endpoints are prefixed with `/api/`
 
 ---
 
-## Stock Prices Module (`/api/stock-prices`)
+## Stock Prices Module (`/api/v1/stock-prices`)
 
 ### 1. Get Stock Price by ID
 - **Method**: `GET`
-- **URL**: `/api/stock-prices/get?id={id}`
+- **URL**: `/api/v1/stock-prices/get?id={id}`
 - **Description**: Retrieve a specific stock price record by ID
 
 **Query Parameters**:
@@ -259,7 +259,7 @@ All endpoints are prefixed with `/api/`
 
 ### 2. Get All Latest Stock Prices
 - **Method**: `GET`
-- **URL**: `/api/stock-prices/getall`
+- **URL**: `/api/v1/stock-prices/getall`
 - **Description**: Retrieve all latest stock prices
 
 **Response Schema**:
@@ -294,7 +294,7 @@ All endpoints are prefixed with `/api/`
 
 ### 3. Get Stock Price by Symbol
 - **Method**: `GET`
-- **URL**: `/api/stock-prices/symbol?symbol={symbol}`
+- **URL**: `/api/v1/stock-prices/symbol?symbol={symbol}`
 - **Description**: Retrieve latest stock price for a specific symbol
 
 **Query Parameters**:
@@ -304,11 +304,11 @@ All endpoints are prefixed with `/api/`
 
 ---
 
-## Stock Prediction Module (`/api/stock-prediction`)
+## Stock Prediction Module (`/api/v1/stock-prediction`)
 
 ### 1. Trigger Prediction
 - **Method**: `POST`
-- **URL**: `/api/stock-prediction/predictions/trigger`
+- **URL**: `/api/v1/stock-prediction/predictions/trigger`
 - **Description**: Trigger AI prediction for a news article
 
 **Request Schema**:
@@ -333,7 +333,7 @@ All endpoints are prefixed with `/api/`
 
 ### 2. Get Predictions List
 - **Method**: `POST`
-- **URL**: `/api/stock-prediction/getlist`
+- **URL**: `/api/v1/stock-prediction/getlist`
 - **Description**: Retrieve paginated list of predictions with sorting support
 
 **Request Schema**: CriteriaDto (same as RSS Sources getlist)
@@ -372,7 +372,7 @@ All endpoints are prefixed with `/api/`
 
 ### 2.1. Get Predictions by Stock Symbol
 - **Method**: `GET`
-- **URL**: `/api/stock-prediction/predictions/stock/{symbol}`
+- **URL**: `/api/v1/stock-prediction/predictions/stock/{symbol}`
 - **Description**: Retrieve all predictions for a specific stock symbol
 
 **Path Parameters**:
@@ -382,14 +382,14 @@ All endpoints are prefixed with `/api/`
 
 ### 2.2. Get Pending Predictions
 - **Method**: `GET`
-- **URL**: `/api/stock-prediction/predictions/pending`
+- **URL**: `/api/v1/stock-prediction/predictions/pending`
 - **Description**: Retrieve predictions that haven't been evaluated yet (no actual impact recorded)
 
 **Response Schema**: Same as Get Predictions List response
 
 ### 3. Get Prediction by ID
 - **Method**: `GET`
-- **URL**: `/api/stock-prediction/predictions/{id}`
+- **URL**: `/api/v1/stock-prediction/predictions/{id}`
 - **Description**: Retrieve a specific prediction by ID
 
 **Path Parameters**:
@@ -399,7 +399,7 @@ All endpoints are prefixed with `/api/`
 
 ### 4. Get Daily Reports
 - **Method**: `POST`
-- **URL**: `/api/stock-prediction/reports/daily`
+- **URL**: `/api/v1/stock-prediction/reports/daily`
 - **Description**: Retrieve daily analysis reports
 
 **Request Schema**: CriteriaDto
@@ -428,7 +428,7 @@ All endpoints are prefixed with `/api/`
 
 ### 5. Get Retrospective Analyses
 - **Method**: `POST`
-- **URL**: `/api/stock-prediction/reports/retrospective`
+- **URL**: `/api/v1/stock-prediction/reports/retrospective`
 - **Description**: Retrieve retrospective analysis reports
 
 **Request Schema**: CriteriaDto
@@ -459,7 +459,7 @@ All endpoints are prefixed with `/api/`
 
 ### 6. Get Patterns
 - **Method**: `GET`
-- **URL**: `/api/stock-prediction/patterns?type={type}`
+- **URL**: `/api/v1/stock-prediction/patterns?type={type}`
 - **Description**: Retrieve pattern recognition results
 
 **Query Parameters**:
@@ -482,7 +482,7 @@ All endpoints are prefixed with `/api/`
 
 ### 7. Trigger Retrospective Analysis
 - **Method**: `POST`
-- **URL**: `/api/stock-prediction/analysis/retrospective`
+- **URL**: `/api/v1/stock-prediction/analysis/retrospective`
 - **Description**: Trigger retrospective analysis process
 
 **Response Schema**:
@@ -494,7 +494,7 @@ All endpoints are prefixed with `/api/`
 
 ### 8. Trigger Daily Report
 - **Method**: `POST`
-- **URL**: `/api/stock-prediction/analysis/daily-report`
+- **URL**: `/api/v1/stock-prediction/analysis/daily-report`
 - **Description**: Trigger daily report generation
 
 **Response Schema**:
@@ -506,7 +506,7 @@ All endpoints are prefixed with `/api/`
 
 ### 9. Get Prediction Rules
 - **Method**: `GET`
-- **URL**: `/api/stock-prediction/rules?type={type}`
+- **URL**: `/api/v1/stock-prediction/rules?type={type}`
 - **Description**: Retrieve prediction rules
 
 **Query Parameters**:
@@ -529,11 +529,11 @@ All endpoints are prefixed with `/api/`
 
 ---
 
-## News Reliability Module (`/api/reliability`)
+## News Reliability Module (`/api/v1/reliability`)
 
 ### 1. Save Reliability Tracking (Create/Update)
 - **Method**: `POST`
-- **URL**: `/api/reliability/save`
+- **URL**: `/api/v1/reliability/save`
 - **Description**: Create or update reliability tracking record
 
 **Request Schema**:
@@ -574,7 +574,7 @@ All endpoints are prefixed with `/api/`
 
 ### 2. Get Reliability Tracking by ID
 - **Method**: `GET`
-- **URL**: `/api/reliability/get?id={id}`
+- **URL**: `/api/v1/reliability/get?id={id}`
 - **Description**: Retrieve a specific reliability tracking record by ID
 
 **Query Parameters**:
@@ -584,7 +584,7 @@ All endpoints are prefixed with `/api/`
 
 ### 3. Get Reliability Tracking List
 - **Method**: `POST`
-- **URL**: `/api/reliability/getlist`
+- **URL**: `/api/v1/reliability/getlist`
 - **Description**: Retrieve paginated list of reliability tracking records
 
 **Request Schema**: CriteriaDto (same as RSS Sources getlist)
@@ -615,7 +615,7 @@ All endpoints are prefixed with `/api/`
 
 ### 4. Delete Reliability Tracking
 - **Method**: `DELETE`
-- **URL**: `/api/reliability/delete?id={id}`
+- **URL**: `/api/v1/reliability/delete?id={id}`
 - **Description**: Delete a specific reliability tracking record
 
 **Query Parameters**:
@@ -630,13 +630,13 @@ All endpoints are prefixed with `/api/`
 
 ---
 
-## Job Execution History Module (`/api/job-execution-history`)
+## Job Execution History Module (`/api/v1/job-execution-history`)
 
 This module provides endpoints to view scheduled job execution history for monitoring and debugging purposes. All endpoints are read-only.
 
 ### 1. Get Job Execution History by ID
 - **Method**: `GET`
-- **URL**: `/api/job-execution-history/get?id={id}`
+- **URL**: `/api/v1/job-execution-history/get?id={id}`
 - **Description**: Retrieve a specific job execution history record by ID
 
 **Query Parameters**:
@@ -660,7 +660,7 @@ This module provides endpoints to view scheduled job execution history for monit
 
 ### 2. Get Job Execution History List
 - **Method**: `POST`
-- **URL**: `/api/job-execution-history/getlist`
+- **URL**: `/api/v1/job-execution-history/getlist`
 - **Description**: Retrieve paginated list of job execution history records
 
 **Request Schema**:
@@ -708,7 +708,7 @@ This module provides endpoints to view scheduled job execution history for monit
 
 ### 3. Get Executions by Job Name
 - **Method**: `GET`
-- **URL**: `/api/job-execution-history/by-job-name?jobName={jobName}`
+- **URL**: `/api/v1/job-execution-history/by-job-name?jobName={jobName}`
 - **Description**: Retrieve all execution history records for a specific scheduled job
 
 **Query Parameters**:
@@ -718,12 +718,12 @@ This module provides endpoints to view scheduled job execution history for monit
 
 **Example**:
 ```
-GET /api/job-execution-history/by-job-name?jobName=RssFetchSchedule
+GET /api/v1/job-execution-history/by-job-name?jobName=RssFetchSchedule
 ```
 
 ### 4. Get Job Execution Statistics
 - **Method**: `GET`
-- **URL**: `/api/job-execution-history/statistics?jobName={jobName}&days={days}`
+- **URL**: `/api/v1/job-execution-history/statistics?jobName={jobName}&days={days}`
 - **Description**: Get execution statistics for a specific job over a time period
 
 **Query Parameters**:
@@ -753,12 +753,12 @@ GET /api/job-execution-history/by-job-name?jobName=RssFetchSchedule
 
 **Example**:
 ```
-GET /api/job-execution-history/statistics?jobName=RssFetchSchedule&days=30
+GET /api/v1/job-execution-history/statistics?jobName=RssFetchSchedule&days=30
 ```
 
 ### 5. Get Recent Executions
 - **Method**: `GET`
-- **URL**: `/api/job-execution-history/recent?limit={limit}`
+- **URL**: `/api/v1/job-execution-history/recent?limit={limit}`
 - **Description**: Retrieve recent job executions across all jobs, ordered by start time (most recent first)
 
 **Query Parameters**:
@@ -768,28 +768,28 @@ GET /api/job-execution-history/statistics?jobName=RssFetchSchedule&days=30
 
 **Example**:
 ```
-GET /api/job-execution-history/recent?limit=50
+GET /api/v1/job-execution-history/recent?limit=50
 ```
 
 ---
 
-## Scheduler Module (`/api/scheduler`)
+## Scheduler Module (`/api/v1/scheduler`)
 
 This module provides endpoints for managing and triggering scheduled tasks. Allows manual triggering, monitoring, and controlling scheduled jobs.
 
 **Available Scheduled Tasks**:
 - `RssFetchSchedule` - Fetches RSS feeds from all sources (every 30 minutes)
-- `StockFetchSchedule` - Fetches BIST100 stock prices (every 15 minutes)
+- `StockFetchSchedule` - Fetches BIST100 stock prices (every 30 minutes)
 - `PredictionProcessorSchedule` - Generates AI predictions for new articles (every hour at :15)
 - `ActualImpactTrackerSchedule` - Evaluates prediction accuracy (every hour at :45)
-- `NewsClusteringSchedule` - Clusters related news articles (every hour)
+- `NewsClusteringSchedule` - Clusters related news articles (every hour at :10 and :40)
 - `DailyAnalysisSchedule` - Generates comprehensive daily reports (daily at 18:00)
 - `DailyLearningReportSchedule` - Generates learning insights (daily at 18:30)
 - `RetrospectiveLearningSchedule` - Analyzes missed opportunities (daily at 19:00)
 
 ### 1. Get All Scheduled Tasks
 - **Method**: `GET`
-- **URL**: `/api/scheduler/tasks`
+- **URL**: `/api/v1/scheduler/tasks`
 - **Description**: Retrieve all registered scheduled tasks with their current status and schedule
 
 **Response Schema**:
@@ -803,7 +803,7 @@ This module provides endpoints for managing and triggering scheduled tasks. Allo
     },
     {
       "name": "StockFetchSchedule",
-      "schedule": "0 */15 * * * *",
+      "schedule": "0 */30 * * * *",
       "isRunning": false
     },
     {
@@ -822,7 +822,7 @@ This module provides endpoints for managing and triggering scheduled tasks. Allo
 
 ### 2. Manually Trigger a Task
 - **Method**: `POST`
-- **URL**: `/api/scheduler/trigger?taskName={taskName}`
+- **URL**: `/api/v1/scheduler/trigger?taskName={taskName}`
 - **Description**: Manually trigger a scheduled task execution (bypasses schedule timing)
 
 **Query Parameters**:
@@ -838,14 +838,14 @@ This module provides endpoints for managing and triggering scheduled tasks. Allo
 
 **Example**:
 ```
-POST /api/scheduler/trigger?taskName=RssFetchSchedule
+POST /api/v1/scheduler/trigger?taskName=RssFetchSchedule
 ```
 
 **Note**: The triggered task execution will be logged to job execution history automatically.
 
 ### 3. Get Task Status
 - **Method**: `GET`
-- **URL**: `/api/scheduler/tasks/{taskName}/status`
+- **URL**: `/api/v1/scheduler/tasks/{taskName}/status`
 - **Description**: Check if a specific task is currently running
 
 **Path Parameters**:
@@ -861,12 +861,12 @@ POST /api/scheduler/trigger?taskName=RssFetchSchedule
 
 **Example**:
 ```
-GET /api/scheduler/tasks/RssFetchSchedule/status
+GET /api/v1/scheduler/tasks/RssFetchSchedule/status
 ```
 
 ### 4. Stop a Task
 - **Method**: `POST`
-- **URL**: `/api/scheduler/tasks/{taskName}/stop`
+- **URL**: `/api/v1/scheduler/tasks/{taskName}/stop`
 - **Description**: Stop/pause automatic execution of a scheduled task (manual triggers still work)
 
 **Path Parameters**:
@@ -882,14 +882,14 @@ GET /api/scheduler/tasks/RssFetchSchedule/status
 
 **Example**:
 ```
-POST /api/scheduler/tasks/RssFetchSchedule/stop
+POST /api/v1/scheduler/tasks/RssFetchSchedule/stop
 ```
 
 **Note**: This pauses automatic scheduled execution but does not affect manual triggers via `/trigger` endpoint.
 
 ### 5. Start a Task
 - **Method**: `POST`
-- **URL**: `/api/scheduler/tasks/{taskName}/start`
+- **URL**: `/api/v1/scheduler/tasks/{taskName}/start`
 - **Description**: Start/resume automatic execution of a scheduled task
 
 **Path Parameters**:
@@ -905,7 +905,7 @@ POST /api/scheduler/tasks/RssFetchSchedule/stop
 
 **Example**:
 ```
-POST /api/scheduler/tasks/RssFetchSchedule/start
+POST /api/v1/scheduler/tasks/RssFetchSchedule/start
 ```
 
 **Note**: This resumes automatic scheduled execution based on the task's cron schedule.
