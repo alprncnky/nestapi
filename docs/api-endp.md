@@ -630,6 +630,149 @@ All endpoints are prefixed with `/api/`
 
 ---
 
+## Job Execution History Module (`/api/job-execution-history`)
+
+This module provides endpoints to view scheduled job execution history for monitoring and debugging purposes. All endpoints are read-only.
+
+### 1. Get Job Execution History by ID
+- **Method**: `GET`
+- **URL**: `/api/job-execution-history/get?id={id}`
+- **Description**: Retrieve a specific job execution history record by ID
+
+**Query Parameters**:
+- `id` (number, required): Job execution history ID
+
+**Response Schema**:
+```json
+{
+  "id": 1,
+  "jobName": "RssFetchSchedule",
+  "status": "SUCCESS",
+  "startTime": "2024-01-01T10:00:00Z",
+  "endTime": "2024-01-01T10:05:00Z",
+  "duration": 300000,
+  "errorMessage": null,
+  "errorStack": null,
+  "createdAt": "2024-01-01T10:00:00Z",
+  "updatedAt": "2024-01-01T10:05:00Z"
+}
+```
+
+### 2. Get Job Execution History List
+- **Method**: `POST`
+- **URL**: `/api/job-execution-history/getlist`
+- **Description**: Retrieve paginated list of job execution history records
+
+**Request Schema**:
+```json
+{
+  "page": 0,           // Optional: Page number (0-based, default: 0)
+  "pageSize": 10,      // Optional: Items per page (default: 10)
+  "sortField": "startTime",  // Optional: Field to sort by
+  "sortType": "DESC"   // Optional: Sort direction (ASC, DESC)
+}
+```
+
+**Response Schema**:
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "jobName": "RssFetchSchedule",
+      "status": "SUCCESS",
+      "startTime": "2024-01-01T10:00:00Z",
+      "endTime": "2024-01-01T10:05:00Z",
+      "duration": 300000,
+      "errorMessage": null,
+      "errorStack": null,
+      "createdAt": "2024-01-01T10:00:00Z",
+      "updatedAt": "2024-01-01T10:05:00Z"
+    },
+    {
+      "id": 2,
+      "jobName": "StockFetchSchedule",
+      "status": "FAILED",
+      "startTime": "2024-01-01T10:15:00Z",
+      "endTime": "2024-01-01T10:15:30Z",
+      "duration": 30000,
+      "errorMessage": "Network timeout",
+      "errorStack": "Error: Network timeout\n    at fetch...",
+      "createdAt": "2024-01-01T10:15:00Z",
+      "updatedAt": "2024-01-01T10:15:30Z"
+    }
+  ],
+  "total": 150
+}
+```
+
+### 3. Get Executions by Job Name
+- **Method**: `GET`
+- **URL**: `/api/job-execution-history/by-job-name?jobName={jobName}`
+- **Description**: Retrieve all execution history records for a specific scheduled job
+
+**Query Parameters**:
+- `jobName` (string, required): Name of the scheduled job (e.g., "RssFetchSchedule", "StockFetchSchedule")
+
+**Response Schema**: Same as Get Job Execution History List response
+
+**Example**:
+```
+GET /api/job-execution-history/by-job-name?jobName=RssFetchSchedule
+```
+
+### 4. Get Job Execution Statistics
+- **Method**: `GET`
+- **URL**: `/api/job-execution-history/statistics?jobName={jobName}&days={days}`
+- **Description**: Get execution statistics for a specific job over a time period
+
+**Query Parameters**:
+- `jobName` (string, required): Name of the scheduled job
+- `days` (number, optional): Number of days to analyze (default: 7)
+
+**Response Schema**:
+```json
+{
+  "jobName": "RssFetchSchedule",
+  "total": 100,
+  "successful": 85,
+  "failed": 10,
+  "skipped": 5,
+  "averageDuration": 245000,
+  "successRate": 85.0
+}
+```
+
+**Response Fields**:
+- `total` - Total number of executions in the period
+- `successful` - Number of successful executions
+- `failed` - Number of failed executions
+- `skipped` - Number of skipped executions
+- `averageDuration` - Average execution duration in milliseconds (for successful executions)
+- `successRate` - Success rate percentage (successful / total * 100)
+
+**Example**:
+```
+GET /api/job-execution-history/statistics?jobName=RssFetchSchedule&days=30
+```
+
+### 5. Get Recent Executions
+- **Method**: `GET`
+- **URL**: `/api/job-execution-history/recent?limit={limit}`
+- **Description**: Retrieve recent job executions across all jobs, ordered by start time (most recent first)
+
+**Query Parameters**:
+- `limit` (number, optional): Maximum number of records to return (default: 100)
+
+**Response Schema**: Same as Get Job Execution History List response
+
+**Example**:
+```
+GET /api/job-execution-history/recent?limit=50
+```
+
+---
+
 ## Enum Values Reference
 
 ### FeedTypeEnum
@@ -670,6 +813,11 @@ All endpoints are prefixed with `/api/`
 - `UP` - Positive impact (price increase)
 - `DOWN` - Negative impact (price decrease)
 - `NEUTRAL` - No significant impact
+
+### ExecutionStatusEnum
+- `SUCCESS` - Job executed successfully
+- `FAILED` - Job execution failed with error
+- `SKIPPED` - Job execution was skipped (e.g., already running or shouldRun returned false)
 
 ---
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { IScheduledTask } from '../interfaces/scheduled-task.interface';
@@ -33,6 +33,65 @@ export class BaseSchedulerService implements OnModuleInit {
   private readonly runningTasks = new Set<string>();
 
   constructor(private schedulerRegistry: SchedulerRegistry) {}
+
+  // Lazy load JobExecutionHistoryService to avoid circular dependency
+  private async getJobExecutionHistoryServiceInstance(): Promise<any> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { JobExecutionHistoryService } = require('../../modules/job-execution-history/business/services/job-execution-history.service');
+      // Get the service instance from NestJS container (simplified approach)
+      // Since we can't easily access the container here, we'll use a different approach
+      // The service will be injected via ModuleRef if needed, but for now we'll use a workaround
+      return null; // Will be set via setter from module
+    } catch {
+      return null;
+    }
+  }
+
+  private jobHistoryServiceInstance: any = null;
+
+  /**
+   * Set the job execution history service instance (called from module)
+   */
+  setJobHistoryService(service: any): void {
+    this.jobHistoryServiceInstance = service;
+  }
+
+  /**
+   * Helper method to log job execution to history
+   */
+  private async logToHistory(
+    type: 'start' | 'success' | 'failure' | 'skip',
+    jobName: string,
+    reason?: string | null,
+    historyId?: number | null,
+    duration?: number,
+    error?: Error,
+  ): Promise<number | null> {
+    if (!this.jobHistoryServiceInstance) {
+      return null;
+    }
+
+    try {
+      if (type === 'start') {
+        const history = await this.jobHistoryServiceInstance.logExecutionStart(jobName);
+        return history?.id || null;
+      } else if (type === 'success' && historyId !== null && historyId !== undefined && duration !== undefined) {
+        await this.jobHistoryServiceInstance.logExecutionSuccess(historyId, duration);
+        return historyId;
+      } else if (type === 'failure' && historyId !== null && historyId !== undefined && duration !== undefined && error) {
+        await this.jobHistoryServiceInstance.logExecutionFailure(historyId, duration, error);
+        return historyId;
+      } else if (type === 'skip') {
+        await this.jobHistoryServiceInstance.logExecutionSkipped(jobName, reason || undefined);
+        return null;
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to log execution to history: ${error.message}`);
+    }
+
+    return null;
+  }
 
   /**
    * Initialize all registered tasks
@@ -94,6 +153,8 @@ export class BaseSchedulerService implements OnModuleInit {
       this.logger.warn(
         `⚠️  Task "${task.name}" is still running, skipping this execution`,
       );
+      // Log skipped execution to history
+      await this.logToHistory('skip', task.name, 'Task is still running, skipping this execution');
       return;
     }
 
@@ -105,6 +166,8 @@ export class BaseSchedulerService implements OnModuleInit {
           this.logger.debug(
             `⏭️  Task "${task.name}" skipped (shouldRun returned false)`,
           );
+          // Log skipped execution to history
+          await this.logToHistory('skip', task.name, 'shouldRun() returned false');
           return;
         }
       } catch (error) {
@@ -117,6 +180,10 @@ export class BaseSchedulerService implements OnModuleInit {
 
     this.runningTasks.add(task.name);
     const startTime = Date.now();
+    let historyId: number | null = null;
+
+    // Log execution start to history
+    historyId = await this.logToHistory('start', task.name);
 
     try {
       this.logger.log(`🚀 Executing task: "${task.name}"`);
@@ -125,12 +192,22 @@ export class BaseSchedulerService implements OnModuleInit {
       
       const duration = Date.now() - startTime;
       this.logger.log(`✅ Task "${task.name}" completed in ${duration}ms`);
+      
+      // Log successful execution to history
+      if (historyId !== null) {
+        await this.logToHistory('success', task.name, null, historyId, duration);
+      }
     } catch (error) {
       const duration = Date.now() - startTime;
       this.logger.error(
         `❌ Task "${task.name}" failed after ${duration}ms: ${error.message}`,
         error.stack,
       );
+
+      // Log failed execution to history
+      if (historyId !== null) {
+        await this.logToHistory('failure', task.name, error.message, historyId, duration, error);
+      }
 
       // Call custom error handler if provided
       if (task.onError) {

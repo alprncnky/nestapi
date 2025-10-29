@@ -16,6 +16,7 @@ import { DailyReportSchema } from '../modules/stock-prediction/data/schemas/dail
 import { NewsClusterSchema } from '../modules/stock-prediction/data/schemas/news-cluster.schema';
 import { RetrospectiveAnalysisSchema } from '../modules/stock-prediction/data/schemas/retrospective-analysis.schema';
 import { PatternRecognitionSchema } from '../modules/stock-prediction/data/schemas/pattern-recognition.schema';
+import { JobExecutionHistorySchema } from '../modules/job-execution-history/data/schemas/job-execution-history.schema';
 
 /**
  * Database configuration factory
@@ -46,6 +47,7 @@ export default registerAs(
       NewsClusterSchema,
       RetrospectiveAnalysisSchema,
       PatternRecognitionSchema,
+      JobExecutionHistorySchema,
     ],
     synchronize: false, // ⚠️ DISABLED - Use migrations instead!
     logging: process.env.NODE_ENV === 'development',

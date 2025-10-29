@@ -9,6 +9,7 @@ import { NewsModule } from './modules/news/news.module';
 import { NewsReliabilityModule } from './modules/news-reliability/news-reliability.module';
 import { StockPricesModule } from './modules/stock-prices/stock-prices.module';
 import { StockPredictionModule } from './modules/stock-prediction/stock-prediction.module';
+import { JobExecutionHistoryModule } from './modules/job-execution-history/job-execution-history.module';
 import databaseConfig from './config/database.config';
 import { validationSchema } from './config/validation.schema';
 
@@ -42,6 +43,7 @@ import { validationSchema } from './config/validation.schema';
     }),
 
     // Feature modules
+    JobExecutionHistoryModule,
     RssSourcesModule,
     NewsModule,
     NewsReliabilityModule,
