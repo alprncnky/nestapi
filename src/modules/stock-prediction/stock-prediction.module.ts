@@ -29,6 +29,7 @@ import { BaseSchedulerService } from '../../common/services/base-scheduler.servi
 import { NewsModule } from '../news/news.module';
 import { StockPricesModule } from '../stock-prices/stock-prices.module';
 import { NewsReliabilityModule } from '../news-reliability/news-reliability.module';
+import { RssSourcesModule } from '../rss-sources/rss-sources.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { NewsReliabilityModule } from '../news-reliability/news-reliability.modu
     forwardRef(() => NewsModule),
     StockPricesModule,
     NewsReliabilityModule,
+    RssSourcesModule,
   ],
   controllers: [
     StockPredictionController,
