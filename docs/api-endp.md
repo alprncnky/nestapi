@@ -332,7 +332,7 @@ All endpoints are prefixed with `/api/`
 ```
 
 ### 2. Get Predictions List
-- **Method**: `GET`
+- **Method**: `POST`
 - **URL**: `/api/stock-prediction/predictions`
 - **Description**: Retrieve paginated list of predictions with sorting support
 
@@ -398,7 +398,7 @@ All endpoints are prefixed with `/api/`
 **Response Schema**: Same as prediction item in Get Predictions List
 
 ### 4. Get Daily Reports
-- **Method**: `GET`
+- **Method**: `POST`
 - **URL**: `/api/stock-prediction/reports/daily`
 - **Description**: Retrieve daily analysis reports
 
@@ -427,7 +427,7 @@ All endpoints are prefixed with `/api/`
 ```
 
 ### 5. Get Retrospective Analyses
-- **Method**: `GET`
+- **Method**: `POST`
 - **URL**: `/api/stock-prediction/reports/retrospective`
 - **Description**: Retrieve retrospective analysis reports
 

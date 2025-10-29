@@ -47,7 +47,7 @@ export class StockPredictionController extends BaseController<any, CreatePredict
     return { message: 'Prediction triggered successfully' };
   }
 
-  @Get('predictions')
+  @GetListEndpoint('Prediction', CriteriaDto, PredictionListResponseDto)
   async getPredictions(@Body() criteriaDto: CriteriaDto): Promise<PredictionListResponseDto> {
     try {
       // Get all predictions from news reliability service
@@ -145,7 +145,7 @@ export class StockPredictionController extends BaseController<any, CreatePredict
     }
   }
 
-  @Get('reports/daily')
+  @Post('reports/daily')
   async getDailyReports(@Body() criteriaDto: CriteriaDto): Promise<DailyReportListResponseDto> {
     const reports = await this.dailyReportRepository.findLatest(10);
     const responseItems = reports.map(report => new DailyReportResponseDto({
@@ -164,7 +164,7 @@ export class StockPredictionController extends BaseController<any, CreatePredict
     return new DailyReportListResponseDto(responseItems, reports.length);
   }
 
-  @Get('reports/retrospective')
+  @Post('reports/retrospective')
   async getRetrospectiveAnalyses(@Body() criteriaDto: CriteriaDto): Promise<RetrospectiveAnalysisListResponseDto> {
     const analyses = await this.retrospectiveAnalysisRepository.findSignificantMovements(5);
     const responseItems = analyses.map(analysis => new RetrospectiveAnalysisResponseDto({
