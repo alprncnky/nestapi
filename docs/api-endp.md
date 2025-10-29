@@ -773,6 +773,145 @@ GET /api/job-execution-history/recent?limit=50
 
 ---
 
+## Scheduler Module (`/api/scheduler`)
+
+This module provides endpoints for managing and triggering scheduled tasks. Allows manual triggering, monitoring, and controlling scheduled jobs.
+
+**Available Scheduled Tasks**:
+- `RssFetchSchedule` - Fetches RSS feeds from all sources (every 30 minutes)
+- `StockFetchSchedule` - Fetches BIST100 stock prices (every 15 minutes)
+- `PredictionProcessorSchedule` - Generates AI predictions for new articles (every hour at :15)
+- `ActualImpactTrackerSchedule` - Evaluates prediction accuracy (every hour at :45)
+- `NewsClusteringSchedule` - Clusters related news articles (every hour)
+- `DailyAnalysisSchedule` - Generates comprehensive daily reports (daily at 18:00)
+- `DailyLearningReportSchedule` - Generates learning insights (daily at 18:30)
+- `RetrospectiveLearningSchedule` - Analyzes missed opportunities (daily at 19:00)
+
+### 1. Get All Scheduled Tasks
+- **Method**: `GET`
+- **URL**: `/api/scheduler/tasks`
+- **Description**: Retrieve all registered scheduled tasks with their current status and schedule
+
+**Response Schema**:
+```json
+{
+  "tasks": [
+    {
+      "name": "RssFetchSchedule",
+      "schedule": "0 */30 * * * *",
+      "isRunning": false
+    },
+    {
+      "name": "StockFetchSchedule",
+      "schedule": "0 */15 * * * *",
+      "isRunning": false
+    },
+    {
+      "name": "PredictionProcessorSchedule",
+      "schedule": "0 15 * * * *",
+      "isRunning": true
+    }
+  ]
+}
+```
+
+**Response Fields**:
+- `name` - Name of the scheduled task
+- `schedule` - Cron expression or interval
+- `isRunning` - Whether the task is currently executing
+
+### 2. Manually Trigger a Task
+- **Method**: `POST`
+- **URL**: `/api/scheduler/trigger?taskName={taskName}`
+- **Description**: Manually trigger a scheduled task execution (bypasses schedule timing)
+
+**Query Parameters**:
+- `taskName` (string, required): Name of the task to trigger (e.g., "RssFetchSchedule", "StockFetchSchedule")
+
+**Response Schema**:
+```json
+{
+  "message": "Task triggered successfully",
+  "taskName": "RssFetchSchedule"
+}
+```
+
+**Example**:
+```
+POST /api/scheduler/trigger?taskName=RssFetchSchedule
+```
+
+**Note**: The triggered task execution will be logged to job execution history automatically.
+
+### 3. Get Task Status
+- **Method**: `GET`
+- **URL**: `/api/scheduler/tasks/{taskName}/status`
+- **Description**: Check if a specific task is currently running
+
+**Path Parameters**:
+- `taskName` (string, required): Name of the task
+
+**Response Schema**:
+```json
+{
+  "taskName": "RssFetchSchedule",
+  "isRunning": false
+}
+```
+
+**Example**:
+```
+GET /api/scheduler/tasks/RssFetchSchedule/status
+```
+
+### 4. Stop a Task
+- **Method**: `POST`
+- **URL**: `/api/scheduler/tasks/{taskName}/stop`
+- **Description**: Stop/pause automatic execution of a scheduled task (manual triggers still work)
+
+**Path Parameters**:
+- `taskName` (string, required): Name of the task to stop
+
+**Response Schema**:
+```json
+{
+  "message": "Task stopped successfully (automatic execution paused)",
+  "taskName": "RssFetchSchedule"
+}
+```
+
+**Example**:
+```
+POST /api/scheduler/tasks/RssFetchSchedule/stop
+```
+
+**Note**: This pauses automatic scheduled execution but does not affect manual triggers via `/trigger` endpoint.
+
+### 5. Start a Task
+- **Method**: `POST`
+- **URL**: `/api/scheduler/tasks/{taskName}/start`
+- **Description**: Start/resume automatic execution of a scheduled task
+
+**Path Parameters**:
+- `taskName` (string, required): Name of the task to start
+
+**Response Schema**:
+```json
+{
+  "message": "Task started successfully (automatic execution resumed)",
+  "taskName": "RssFetchSchedule"
+}
+```
+
+**Example**:
+```
+POST /api/scheduler/tasks/RssFetchSchedule/start
+```
+
+**Note**: This resumes automatic scheduled execution based on the task's cron schedule.
+
+---
+
 ## Enum Values Reference
 
 ### FeedTypeEnum
