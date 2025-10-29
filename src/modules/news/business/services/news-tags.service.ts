@@ -33,7 +33,9 @@ export class NewsTagsService {
 
     const tag = new NewsTag();
     Object.assign(tag, {
-      ...createNewsTagDto,
+      name: createNewsTagDto.name,
+      tagType: createNewsTagDto.type, // Map 'type' from DTO to 'tagType' in entity
+      description: createNewsTagDto.description,
       usageCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
