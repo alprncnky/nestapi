@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Module, OnModuleInit, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PredictionRuleSchema } from './data/schemas/prediction-rule.schema';
 import { DailyReportSchema } from './data/schemas/daily-report.schema';
@@ -39,7 +39,7 @@ import { NewsReliabilityModule } from '../news-reliability/news-reliability.modu
       RetrospectiveAnalysisSchema,
       PatternRecognitionSchema,
     ]),
-    NewsModule,
+    forwardRef(() => NewsModule),
     StockPricesModule,
     NewsReliabilityModule,
   ],

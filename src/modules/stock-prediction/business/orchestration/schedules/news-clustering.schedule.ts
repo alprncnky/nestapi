@@ -9,7 +9,9 @@ import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.
  * News Clustering Schedule - Orchestration Layer
  * 
  * Coordinates the clustering of related news articles.
- * Runs every hour to cluster recent articles.
+ * Runs every hour at :00 to cluster PROCESSED articles.
+ * 
+ * Note: Articles must be PROCESSED first (by ArticleProcessorSchedule) before clustering.
  */
 @Injectable()
 export class NewsClusteringSchedule implements IScheduledTask {
@@ -28,48 +30,38 @@ export class NewsClusteringSchedule implements IScheduledTask {
     const startTime = Date.now();
 
     try {
-      // Get PENDING articles from the last 24 hours
-      const pendingArticles = await this.newsService.findByStatus(NewsStatusEnum.PENDING);
+      // Get PROCESSED articles from the last 24 hours (clustering should happen after processing)
+      const processedArticles = await this.newsService.findByStatus(NewsStatusEnum.PROCESSED);
       
       // Filter to only articles from the last 24 hours
       const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const recentPendingArticles = pendingArticles.filter(
+      const recentProcessedArticles = processedArticles.filter(
         article => article.publishedAt >= cutoffDate
       );
 
-      this.logger.log(`Processing ${recentPendingArticles.length} pending articles for clustering`);
+      this.logger.log(`Processing ${recentProcessedArticles.length} processed articles for clustering`);
 
       let clusteredCount = 0;
-      let processedCount = 0;
       let errorCount = 0;
 
-      for (const article of recentPendingArticles) {
+      for (const article of recentProcessedArticles) {
         try {
-          // Mark as PROCESSING before clustering
-          await this.newsService.updateStatus(article.id, NewsStatusEnum.PROCESSING);
-          
-          // Perform clustering
+          // Perform clustering (article is already PROCESSED)
           await this.newsClusteringService.clusterRelatedNews(article.id);
           
-          // Mark as PROCESSED after successful clustering
-          await this.newsService.updateStatus(article.id, NewsStatusEnum.PROCESSED);
-          
           clusteredCount++;
-          processedCount++;
           
           // Small delay to avoid overwhelming the system
           await this.delay(100);
         } catch (error) {
           this.logger.error(`Error clustering article ${article.id}:`, error);
           errorCount++;
-          // Optionally mark as FAILED if needed
-          // await this.newsService.updateStatus(article.id, NewsStatusEnum.FAILED);
         }
       }
       
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
       this.logger.log(`✅ News clustering job completed in ${duration}s`);
-      this.logger.log(`📊 Summary: ${clusteredCount} articles clustered, ${processedCount} marked as PROCESSED, ${errorCount} errors`);
+      this.logger.log(`📊 Summary: ${clusteredCount} articles clustered, ${errorCount} errors`);
     } catch (error) {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
       this.logger.error(`❌ News clustering job failed after ${duration}s: ${error.message}`, error.stack);

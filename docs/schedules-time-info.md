@@ -13,10 +13,12 @@ This document provides a comprehensive overview of all scheduled tasks in the In
 | `:00` | **RssFetchSchedule** | Every 30 min | ~2-5 min | Fetch RSS feeds from all sources |
 | `:00` | **StockFetchSchedule** | Every 15 min | ~1-3 min | Fetch BIST100 stock prices |
 | `:00` | **NewsClusteringSchedule** | Every hour | ~3-8 min | Cluster related news articles |
+| `:05` | **ArticleProcessorSchedule** | Every hour | ~5-15 min | Process PENDING articles (sentiment, categorization, stock extraction) |
 | `:15` | **PredictionProcessorSchedule** | Every hour | ~5-15 min | Generate AI predictions for new articles |
 | `:15` | **StockFetchSchedule** | Every 15 min | ~1-3 min | Fetch BIST100 stock prices |
 | `:30` | **RssFetchSchedule** | Every 30 min | ~2-5 min | Fetch RSS feeds from all sources |
 | `:30` | **StockFetchSchedule** | Every 15 min | ~1-3 min | Fetch BIST100 stock prices |
+| `:35` | **ArticleProcessorSchedule** | Every hour | ~5-15 min | Process PENDING articles (sentiment, categorization, stock extraction) |
 | `:45` | **ActualImpactTrackerSchedule** | Every hour | ~3-10 min | Evaluate prediction accuracy |
 | `:45` | **StockFetchSchedule** | Every 15 min | ~1-3 min | Fetch BIST100 stock prices |
 
@@ -32,29 +34,32 @@ This document provides a comprehensive overview of all scheduled tasks in the In
 
 ### Data Flow Chain
 ```
-RSS Sources → News Articles → Stock Predictions → Impact Tracking → Learning System
-     ↓              ↓              ↓                ↓              ↓
-RssFetchSchedule → PredictionProcessorSchedule → ActualImpactTrackerSchedule → Learning Updates
+RSS Sources → News Articles → Article Processing → Stock Predictions → Impact Tracking → Learning System
+     ↓              ↓                  ↓                    ↓                ↓              ↓
+RssFetchSchedule → ArticleProcessorSchedule → PredictionProcessorSchedule → ActualImpactTrackerSchedule → Learning Updates
 ```
 
 ### Dependency Timeline
-1. **RSS Fetch** (`:00`, `:30`) → **News Articles** (15 min processing time)
-2. **Prediction Processing** (`:15`) → **Stock Predictions** (30 min processing time)  
-3. **Impact Tracking** (`:45`) → **Accuracy Evaluation** (15 min processing time)
-4. **Daily Analysis** (`18:00`) → **Learning Reports** (`18:30`) → **Retrospective Analysis** (`19:00`)
+1. **RSS Fetch** (`:00`, `:30`) → **News Articles** (creates PENDING articles)
+2. **Article Processing** (`:05`, `:35`) → **Processed Articles** (extracts stock symbols, sentiment, categorization)
+3. **Prediction Processing** (`:15`) → **Stock Predictions** (uses PROCESSED articles with stock mentions)
+4. **Impact Tracking** (`:45`) → **Accuracy Evaluation** (15 min processing time)
+5. **Daily Analysis** (`18:00`) → **Learning Reports** (`18:30`) → **Retrospective Analysis** (`19:00`)
 
 ## 📈 Schedule Optimization Benefits
 
 ### Before Optimization Issues
 - ❌ **Overlap Conflicts**: DailyAnalysisSchedule and DailyLearningReportSchedule both at 18:00
 - ❌ **Resource Contention**: Multiple jobs running simultaneously every 5 minutes
-- ❌ **Dependency Violations**: Predictions processed before RSS fetch completed
+- ❌ **Dependency Violations**: Predictions processed before articles processed (missing ArticleProcessorSchedule)
+- ❌ **Missing Pipeline**: Stock symbols never extracted, articles never transitioned from PENDING to PROCESSED
 - ❌ **API Rate Limiting**: Excessive RSS fetching every 5 minutes
 
 ### After Optimization Benefits
 - ✅ **No Overlaps**: Clear time gaps between dependent jobs
 - ✅ **Resource Efficiency**: Reduced concurrent database connections
-- ✅ **Proper Sequencing**: Jobs run in logical dependency order
+- ✅ **Proper Sequencing**: Jobs run in logical dependency order (RSS → Process → Predict)
+- ✅ **Complete Pipeline**: Articles properly processed with stock symbol extraction
 - ✅ **API Optimization**: RSS fetching reduced to reasonable 30-minute intervals
 - ✅ **Predictable Execution**: Easy to monitor and debug
 
@@ -66,6 +71,15 @@ RssFetchSchedule → PredictionProcessorSchedule → ActualImpactTrackerSchedule
 readonly schedule = CronExpression.EVERY_30_MINUTES;
 // Runs at: :00 and :30 of every hour
 // Purpose: Fetch RSS feeds from all active sources
+```
+
+### News Module
+```typescript
+// ArticleProcessorSchedule
+readonly schedule = '0 5,35 * * * *';
+// Runs at: :05 and :35 of every hour
+// Purpose: Process PENDING articles (sentiment, categorization, stock symbol extraction)
+// Dependencies: Runs after RSS Fetch to process newly fetched articles
 ```
 
 ### Stock Prices Module  
@@ -125,6 +139,7 @@ readonly schedule = CronExpression.EVERY_DAY_AT_7PM;
 
 ### Expected Execution Times
 - **RSS Fetch**: 2-5 minutes (depends on number of sources)
+- **Article Processing**: 5-15 minutes (depends on number of PENDING articles, OpenAI API calls)
 - **Stock Fetch**: 1-3 minutes (BIST100 API response time)
 - **Prediction Processing**: 5-15 minutes (depends on number of new articles)
 - **Impact Tracking**: 3-10 minutes (depends on number of pending predictions)

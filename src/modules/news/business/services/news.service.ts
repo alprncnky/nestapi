@@ -152,8 +152,7 @@ export class NewsService {
   async findByStatus(status: NewsStatusEnum): Promise<NewsArticle[]> {
     return await this.newsRepository.find({
       where: { status },
-      order: { scrapedAt: 'DESC' },
-      take: 100,
+      order: { scrapedAt: 'ASC' }, // Process oldest first
     });
   }
 
@@ -167,6 +166,15 @@ export class NewsService {
 
     await this.newsRepository.update(id, {
       sentimentScore: score,
+    });
+  }
+
+  /**
+   * Update category
+   */
+  async updateCategory(id: number, category: NewsCategoryEnum): Promise<void> {
+    await this.newsRepository.update(id, {
+      mainCategory: category,
     });
   }
 

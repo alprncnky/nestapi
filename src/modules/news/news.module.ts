@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NewsArticleSchema } from './data/schemas/news-article.schema';
 import { NewsTagSchema } from './data/schemas/news-tag.schema';
@@ -10,7 +10,11 @@ import { NewsService } from './business/services/news.service';
 import { NewsTagsService } from './business/services/news-tags.service';
 import { StockMentionsService } from './business/services/stock-mentions.service';
 import { ExtractedItemsService } from './business/services/extracted-items.service';
+import { ArticleProcessorService } from './business/services/article-processor.service';
+import { ArticleProcessorSchedule } from './business/orchestration/schedules/article-processor.schedule';
 import { NewsArticleRepository } from './data/repositories/news-article.repository';
+import { StockPredictionModule } from '../stock-prediction/stock-prediction.module';
+import { BaseSchedulerService } from '../../common/services/base-scheduler.service';
 
 /**
  * News Module
@@ -23,6 +27,7 @@ import { NewsArticleRepository } from './data/repositories/news-article.reposito
  * - Named Entity Recognition (NER) results storage
  * - Sentiment analysis integration
  * - Category-based filtering
+ * - Article processing with AI/NLP
  */
 @Module({
   imports: [
@@ -33,6 +38,7 @@ import { NewsArticleRepository } from './data/repositories/news-article.reposito
       StockMentionSchema,
       ExtractedItemSchema,
     ]),
+    forwardRef(() => StockPredictionModule), // Import for OpenAIService
   ],
   controllers: [NewsController],
   providers: [
@@ -41,6 +47,8 @@ import { NewsArticleRepository } from './data/repositories/news-article.reposito
     ExtractedItemsService,
     NewsTagsService,
     NewsService,
+    ArticleProcessorService,
+    ArticleProcessorSchedule,
   ],
   exports: [
     NewsService,
@@ -49,4 +57,17 @@ import { NewsArticleRepository } from './data/repositories/news-article.reposito
     ExtractedItemsService,
   ], // Export for use in other modules (AI/NLP processing, RSS Parser, etc.)
 })
-export class NewsModule {}
+export class NewsModule implements OnModuleInit {
+  constructor(
+    private readonly baseScheduler: BaseSchedulerService,
+    private readonly articleProcessorSchedule: ArticleProcessorSchedule,
+  ) {}
+
+  /**
+   * Register module schedules on initialization
+   */
+  async onModuleInit() {
+    // Register article processor schedule with base scheduler
+    this.baseScheduler.registerTask(this.articleProcessorSchedule);
+  }
+}
