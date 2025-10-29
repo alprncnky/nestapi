@@ -170,30 +170,47 @@ RSS Sources → News Articles → Article Processing → Stock Predictions → I
 
 **Zaman Planı**: Her saatte `:15` dakikasında
 
-**Amaç**: İşlenmiş haber makalelerinden AI destekli hisse senedi tahminleri üretmek.
+**Amaç**: İşlenmiş haber makalelerinden AI destekli hisse senedi tahminleri üretmek. Multi-source cluster-aware prediction desteği ile birden fazla kaynaktan gelen haberleri birleştirerek daha doğru tahminler yapmak.
 
 **İş Akışı**:
 1. Son 15 dakika içinde işlenmiş (`PROCESSED`) makaleleri bulur
 2. Her makale için:
    - Makalede bahsedilen hisse senetlerini (`stock_mentions`) bulur
+   - **Cluster Kontrolü**: Makalenin bir cluster'a ait olup olmadığını kontrol eder
+   - **Multi-Source vs Single-Source Kararı**:
+     - Eğer makale bir cluster'a aitse ve cluster'da birden fazla makale varsa → **Multi-source prediction**
+     - Yoksa → **Single-source prediction**
    - Her hisse için AI ile tahmin üretir:
+     - **Single-Source**: Makalenin kendi verilerini kullanarak tahmin
+     - **Multi-Source**: Cluster içindeki tüm makalelerin weighted analizi ile tahmin
      - Tahmin yönü (UP/DOWN/NEUTRAL)
      - Tahmin yüzdesi (-15% ile +15% arası)
      - Güven skoru (0-100)
      - Tahmin zaman penceresi (1H, 4H, 1D, 1W)
      - Tahmin gerekçesi ve faktörler
-   - Öğrenme kurallarını uygular (LearningSystemService'den)
+   - **Öğrenme Kurallarını Uygular** (`applyLearningRules`):
+     - **Category-based rules**: Kategori bazlı geçmiş performans
+     - **Sentiment-based rules**: Sentiment bazlı geçmiş performans
+     - **Impact-level rules**: Etki seviyesi bazlı geçmiş performans
+     - **Source-based rules** (YENİ): Kaynak güvenilirliği ve geçmiş performansına göre:
+       - Combined weight: %60 rule accuracy + %40 base reliability
+       - Yüksek performanslı kaynaklar confidence'ı artırır
+       - Düşük performanslı kaynaklar confidence'ı azaltır
+       - Source reliability score multiplier olarak uygulanır
    - Tahmini `news_reliability_tracking` tablosuna kaydeder
 
 **Bağımlılıklar**:
 - ✅ **ArticleProcessorSchedule** tamamlanmalı (makaleler PROCESSED ve stock_mentions eklenmiş olmalı)
+- ✅ **NewsClusteringSchedule** (opsiyonel): Cluster verileri varsa multi-source prediction kullanılır
 - ✅ OpenAI API erişilebilir olmalı
 
 **Kullandığı Servisler**:
 - `PredictionEngineService`: Tahmin üretme mantığı
 - `NewsService`: İşlenmiş makaleleri bulma
 - `NewsReliabilityService`: Tahminleri kaydetme
-- `LearningSystemService`: Öğrenme kurallarını uygulama
+- `PredictionRuleRepository`: Öğrenme kurallarını çekme ve uygulama
+- `RssSourceRepository`: Kaynak güvenilirlik skorlarını çekme
+- `NewsClusterRepository`: Cluster bilgilerini çekme
 - `OpenAIService`: AI tahminleri için
 
 **Kaydettiği/Güncellediği Tablolar**:
@@ -201,14 +218,20 @@ RSS Sources → News Articles → Article Processing → Stock Predictions → I
   - `articleId`, `stockSymbol`
   - `predictedImpact` (UP/DOWN/NEUTRAL)
   - `predictedChangePercent`
-  - `predictionConfidence` (0-100)
+  - `predictionConfidence` (0-100) - Source-based weighting ile adjust edilmiş
   - `timeWindow` (1H, 4H, 1D, 1W)
   - `createdAt`
 
 **Önemli Notlar**:
 - Sadece stock mention'ı olan makaleler için tahmin üretilir
+- **Cluster-aware**: Eğer makale bir cluster'a aitse, multi-source prediction kullanılır
+- **Source-based weighting**: Her kaynağın geçmiş performansı ve güvenilirlik skoru tahminleri etkiler
+- **Multi-source advantage**: Birden fazla kaynak aynı olayı bildiriyorsa, confidence skoru artar
 - AI başarısız olursa fallback olarak rule-based tahmin yapılır
-- Öğrenme kuralları tahminleri ayarlayabilir
+- Öğrenme kuralları tahminleri dinamik olarak ayarlar:
+  - Yüksek performanslı kaynaklar confidence'ı artırır
+  - Düşük performanslı kaynaklar confidence'ı azaltır
+  - Source reliability score (0-100) final confidence'a multiplier olarak uygulanır
 
 ---
 
@@ -464,9 +487,21 @@ RSS Sources → News Articles → Article Processing → Stock Predictions → I
          │
          ▼
 ┌─────────────────────┐
+│NewsClustering       │ :00
+│Schedule             │
+└────────┬────────────┘
+         │
+         └──► news_clusters (multi-source grouping)
+         │
+         ▼
+┌─────────────────────┐
 │PredictionProcessor  │ :15
 │Schedule             │
 └────────┬────────────┘
+         │
+         ├──► Cluster kontrolü (multi-source?)
+         ├──► Source-based weighting (reliability + rules)
+         └──► news_reliability_tracking (predictedImpact, predictedChangePercent)
          │
          ▼
 ┌──────────────────────────┐
@@ -537,7 +572,9 @@ news_articles (1) ──→ (N) extracted_items
 news_articles (1) ──→ (N) news_article_tags ──→ (N) news_tags
 news_articles (1) ──→ (N) news_reliability_tracking
 news_articles (1) ──→ (N) news_clusters
+news_clusters ──→ PredictionProcessorSchedule (multi-source prediction için)
 news_reliability_tracking ──→ prediction_rules (indirect learning)
+rss_sources ──→ prediction_rules (source-based rules learning)
 ```
 
 ---
@@ -555,6 +592,7 @@ news_reliability_tracking ──→ prediction_rules (indirect learning)
 ### 2. Paralel Çalışabilen Job'lar
 - **StockFetchSchedule**: Diğer job'lardan bağımsız çalışır
 - **NewsClusteringSchedule**: ArticleProcessorSchedule tamamlandıktan sonra herhangi bir zamanda çalışabilir
+- **PredictionProcessorSchedule**: NewsClusteringSchedule'ın verilerini kullanabilir ama zorunlu değil (cluster-aware, fallback single-source)
 
 ### 3. Overlap Prevention
 - Her job, `BaseSchedulerService` kullanarak overlap prevention mekanizmasına sahiptir
@@ -603,13 +641,19 @@ Her job aşağıdaki formatı kullanır:
 ## 📝 Son Güncelleme
 
 **Son Güncelleme**: 2025-01-26  
-**Versiyon**: 1.0  
-**Durum**: Production Ready
+**Versiyon**: 1.1  
+**Durum**: Production Ready (Source-based weighted learning implemented)
 
 ---
 
 ## 🔄 Değişiklik Geçmişi
 
+- **v1.1** (2025-01-26): Source-based weighted learning ve multi-source prediction desteği eklendi
+  - PredictionProcessorSchedule artık cluster-aware çalışıyor
+  - Source-based weighting eklendi (reliability score + rule accuracy)
+  - Multi-source prediction desteği eklendi
+  - Öğrenme kuralları detaylandırıldı
+  
 - **v1.0** (2025-01-26): İlk doküman oluşturuldu
   - Tüm scheduled job'lar dokümante edildi
   - Veri akış diyagramları eklendi

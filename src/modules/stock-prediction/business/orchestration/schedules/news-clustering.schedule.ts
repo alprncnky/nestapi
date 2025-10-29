@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CronExpression } from '@nestjs/schedule';
 import { NewsClusteringService } from '../../services/news-clustering.service';
 import { NewsService } from '../../../../news/business/services/news.service';
 import { NewsStatusEnum } from '../../../../news/contracts/enums/news-status.enum';
@@ -9,14 +8,18 @@ import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.
  * News Clustering Schedule - Orchestration Layer
  * 
  * Coordinates the clustering of related news articles.
- * Runs every hour at :00 to cluster PROCESSED articles.
+ * Runs every hour at :10 and :40 to cluster PROCESSED articles.
+ * 
+ * Schedule: Runs AFTER ArticleProcessorSchedule (:05 and :35) to ensure articles are PROCESSED before clustering.
+ * Purpose: Groups related articles from multiple sources for multi-source prediction support.
  * 
  * Note: Articles must be PROCESSED first (by ArticleProcessorSchedule) before clustering.
+ * The 5-minute gap ensures ArticleProcessorSchedule completes before clustering starts.
  */
 @Injectable()
 export class NewsClusteringSchedule implements IScheduledTask {
   readonly name = 'NewsClusteringSchedule';
-  readonly schedule = CronExpression.EVERY_HOUR;
+  readonly schedule = '0 10,40 * * * *'; // Every hour at :10 and :40 (after ArticleProcessor at :05 and :35)
 
   private readonly logger = new Logger(NewsClusteringSchedule.name);
 
