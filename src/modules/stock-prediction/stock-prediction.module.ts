@@ -43,7 +43,7 @@ import { RssSourcesModule } from '../rss-sources/rss-sources.module';
     forwardRef(() => NewsModule),
     StockPricesModule,
     NewsReliabilityModule,
-    RssSourcesModule,
+    forwardRef(() => RssSourcesModule),
   ],
   controllers: [
     StockPredictionController,
