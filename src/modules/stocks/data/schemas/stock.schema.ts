@@ -24,9 +24,9 @@ export const StockSchema = new EntitySchema<Stock>({
     updatedAt: { type: 'timestamp', updateDate: true },
   },
   indices: [
-    { name: 'idx_symbol_market_type', columns: ['symbol', 'market_type'] },
-    { name: 'idx_market_type', columns: ['market_type'] },
-    { name: 'idx_fetched_at', columns: ['fetched_at'] },
+    { name: 'idx_symbol_market_type', columns: ['symbol', 'marketType'] },
+    { name: 'idx_market_type', columns: ['marketType'] },
+    { name: 'idx_fetched_at', columns: ['fetchedAt'] },
   ],
 });
 

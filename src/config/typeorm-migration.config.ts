@@ -4,13 +4,8 @@ import { join } from 'path';
 
 // Import schemas
 import { RssSourceSchema } from '../modules/rss-sources/data/schemas/rss-source.schema';
-import { SourceReliabilityScoreSchema } from '../modules/rss-sources/data/schemas/source-reliability-score.schema';
-import { NewsArticleSchema } from '../modules/news/data/schemas/news-article.schema';
-import { NewsTagSchema } from '../modules/news/data/schemas/news-tag.schema';
-import { NewsArticleTagSchema } from '../modules/news/data/schemas/news-article-tag.schema';
-import { StockMentionSchema } from '../modules/news/data/schemas/stock-mention.schema';
-import { ExtractedItemSchema } from '../modules/news/data/schemas/extracted-item.schema';
-import { NewsReliabilityTrackingSchema } from '../modules/news-reliability/data/schemas/news-reliability-tracking.schema';
+import { StockSchema } from '../modules/stocks/data/schemas/stock.schema';
+import { JobExecutionHistorySchema } from '../modules/job-execution-history/data/schemas/job-execution-history.schema';
 
 // Load environment variables
 config();
@@ -32,13 +27,8 @@ export const dataSourceOptions: DataSourceOptions = {
   // Use EntitySchema instead of decorated entities
   entities: [
     RssSourceSchema,
-    SourceReliabilityScoreSchema,
-    NewsArticleSchema,
-    NewsTagSchema,
-    NewsArticleTagSchema,
-    StockMentionSchema,
-    ExtractedItemSchema,
-    NewsReliabilityTrackingSchema,
+    StockSchema,
+    JobExecutionHistorySchema,
   ],
   
   // Migration configuration

@@ -5,10 +5,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GlobalSchedulerModule } from './common/scheduler.module';
 import { RssSourcesModule } from './modules/rss-sources/rss-sources.module';
-import { NewsModule } from './modules/news/news.module';
-import { NewsReliabilityModule } from './modules/news-reliability/news-reliability.module';
-import { StockPricesModule } from './modules/stock-prices/stock-prices.module';
-import { StockPredictionModule } from './modules/stock-prediction/stock-prediction.module';
 import { StocksModule } from './modules/stocks/stocks.module';
 import { JobExecutionHistoryModule } from './modules/job-execution-history/job-execution-history.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
@@ -48,10 +44,6 @@ import { validationSchema } from './config/validation.schema';
     JobExecutionHistoryModule,
     SchedulerModule,
     RssSourcesModule,
-    NewsModule,
-    NewsReliabilityModule,
-    StockPricesModule,
-    StockPredictionModule,
     StocksModule,
   ],
   controllers: [AppController],
