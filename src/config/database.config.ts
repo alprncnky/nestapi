@@ -5,6 +5,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { RssSourceSchema } from '../modules/rss-sources/data/schemas/rss-source.schema';
 import { StockSchema } from '../modules/stocks/data/schemas/stock.schema';
 import { JobExecutionHistorySchema } from '../modules/job-execution-history/data/schemas/job-execution-history.schema';
+import { FeedSchema } from '../modules/feed/data/schemas/feed.schema';
 
 /**
  * Database configuration factory
@@ -24,6 +25,7 @@ export default registerAs(
       RssSourceSchema,
       StockSchema,
       JobExecutionHistorySchema,
+      FeedSchema,
     ],
     synchronize: false, // ⚠️ DISABLED - Use migrations instead!
     logging: process.env.NODE_ENV === 'development',

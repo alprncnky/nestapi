@@ -8,6 +8,7 @@ import { RssSourcesModule } from './modules/rss-sources/rss-sources.module';
 import { StocksModule } from './modules/stocks/stocks.module';
 import { JobExecutionHistoryModule } from './modules/job-execution-history/job-execution-history.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { FeedModule } from './modules/feed/feed.module';
 import databaseConfig from './config/database.config';
 import { validationSchema } from './config/validation.schema';
 
@@ -45,6 +46,7 @@ import { validationSchema } from './config/validation.schema';
     SchedulerModule,
     RssSourcesModule,
     StocksModule,
+    FeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
