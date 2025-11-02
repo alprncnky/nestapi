@@ -38,7 +38,7 @@ export class StockFetchSchedule implements IScheduledTask {
 
       if (result.saved > 0) {
         this.logger.debug('🧹 Cleaning old stock data (keeping last 30 days)...');
-        await this.stocksService.cleanOldData(30);
+        await this.stocksService.cleanOldData(200);
       }
     } catch (error) {
       this.logger.error(`💥 Stock fetch job failed: ${error.message}`, error.stack);

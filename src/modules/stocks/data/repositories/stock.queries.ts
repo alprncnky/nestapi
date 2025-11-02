@@ -4,26 +4,26 @@ export const SQLQueries = {
       s.id,
       s.symbol,
       s.name,
-      s.last_price as "lastPrice",
-      s.highest_price as "highestPrice",
-      s.lowest_price as "lowestPrice",
+      s."lastPrice",
+      s."highestPrice",
+      s."lowestPrice",
       s.volume,
-      s.market_type as "marketType",
-      s.daily_percent as "dailyPercent",
-      s.weekly_percent as "weeklyPercent",
-      s.monthly_percent as "monthlyPercent",
-      s.yearly_percent as "yearlyPercent",
-      s.fetched_at as "fetchedAt",
-      s.created_at as "createdAt",
-      s.updated_at as "updatedAt"
+      s."marketType",
+      s."dailyPercent",
+      s."weeklyPercent",
+      s."monthlyPercent",
+      s."yearlyPercent",
+      s."fetchedAt",
+      s."createdAt",
+      s."updatedAt"
     FROM stocks s
-    WHERE s.market_type = $1
-    ORDER BY s.fetched_at DESC, s.symbol ASC
+    WHERE s."marketType" = $1
+    ORDER BY s."fetchedAt" DESC, s.symbol ASC
   ` as const,
 
   deleteOlderThan: `
     DELETE FROM stocks
-    WHERE fetched_at < $1
+    WHERE "fetchedAt" < $1
   ` as const,
 } as const;
 
