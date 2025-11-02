@@ -18,7 +18,6 @@ export class StocksService {
       this.logger.log('Starting BIST 100 fetch and save operation...');
 
       const oyakStocks = await this.oyakFetchService.fetchBist100Prices();
-      this.logger.log(`Fetched ${oyakStocks.length} stocks from OYAK`);
 
       let saved = 0;
       let errors = 0;
@@ -50,9 +49,7 @@ export class StocksService {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
-    this.logger.log(`Cleaning stock data older than ${cutoffDate.toISOString()}`);
     await this.stockRepository.deleteOlderThan(cutoffDate);
-    this.logger.log('Old stock data cleaned successfully');
   }
 }
 

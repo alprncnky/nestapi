@@ -24,9 +24,7 @@ export class RssFetcherService {
 
   async fetchRssFeed(url: string): Promise<Parser.Item[]> {
     try {
-      this.logger.log(`Fetching RSS feed from: ${url}`);
       const feed = await this.parser.parseURL(url);
-      this.logger.log(`Successfully fetched ${feed.items.length} items from ${url}`);
       return feed.items;
     } catch (error) {
       this.logger.error(`Failed to fetch RSS feed from ${url}: ${error.message}`, error.stack);

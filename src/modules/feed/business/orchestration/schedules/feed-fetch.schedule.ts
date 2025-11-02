@@ -23,8 +23,6 @@ export class FeedFetchSchedule implements IScheduledTask {
     const startTime = Date.now();
 
     try {
-      this.logger.log('📡 Fetching feeds from RSS sources...');
-
       const result = await this.feedService.jobExecute();
 
       if (result.saved === 0 && result.skipped === 0) {

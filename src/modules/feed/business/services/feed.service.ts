@@ -85,7 +85,6 @@ export class FeedService {
     let errors = 0;
 
     try {
-      this.logger.log(`Fetching from source: ${rssSource.source}`);
       const items = await this.rssFetcherService.fetchRssFeed(rssSource.url);
 
       for (const item of items) {
@@ -113,7 +112,6 @@ export class FeedService {
       // Check if feed already exists
       const existingFeed = await this.feedRepository.findByUrl(item.link || '');
       if (existingFeed) {
-        this.logger.debug(`Feed already exists, skipping: ${item.link}`);
         return 'skipped';
       }
 
@@ -143,7 +141,6 @@ export class FeedService {
     });
 
     await this.feedRepository.save(feed);
-    this.logger.debug(`Saved feed: ${feed.title}`);
   }
 
   private getRssSources(): RssSourceConfig[] {

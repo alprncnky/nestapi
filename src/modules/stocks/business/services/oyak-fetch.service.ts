@@ -36,8 +36,6 @@ export class OyakFetchService {
    */
   async fetchBist100Prices(): Promise<OyakStockData[]> {
     try {
-      this.logger.log('Fetching BIST 100 data from OYAK Yatırım...');
-
       const response = await fetch(this.BASE_URL, {
         headers: {
           'User-Agent':
@@ -55,7 +53,6 @@ export class OyakFetchService {
       const html = await response.text();
       const stocks = this.parseHtml(html);
 
-      this.logger.log(`Successfully parsed ${stocks.length} stocks from OYAK`);
       return stocks;
     } catch (error) {
       this.logger.error(
@@ -178,12 +175,10 @@ export class OyakFetchService {
    * Test method for debugging
    */
   async testFetch(): Promise<void> {
-    this.logger.log('=== OYAK Fetch Test ===');
     const stocks = await this.fetchBist100Prices();
-    this.logger.log(`Total stocks fetched: ${stocks.length}`);
     if (stocks.length > 0) {
-      this.logger.log('Sample stock data:');
-      this.logger.log(JSON.stringify(stocks[0], null, 2));
+      this.logger.log(`✅ Test successful: Fetched ${stocks.length} stocks`);
+      this.logger.log('Sample:', JSON.stringify(stocks[0], null, 2));
     }
   }
 }

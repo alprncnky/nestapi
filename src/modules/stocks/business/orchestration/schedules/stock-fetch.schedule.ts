@@ -23,8 +23,6 @@ export class StockFetchSchedule implements IScheduledTask {
     const startTime = Date.now();
 
     try {
-      this.logger.log('📡 Fetching stock data from OYAK Yatırım...');
-
       const result = await this.stocksService.fetchAndSaveBist100();
 
       if (result.saved === 0) {
@@ -37,7 +35,6 @@ export class StockFetchSchedule implements IScheduledTask {
       this.logger.log(`📊 Summary: ${result.saved} saved, ${result.errors} errors`);
 
       if (result.saved > 0) {
-        this.logger.debug('🧹 Cleaning old stock data (keeping last 30 days)...');
         await this.stocksService.cleanOldData(200);
       }
     } catch (error) {
