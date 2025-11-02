@@ -16,3 +16,9 @@ export const StockResponseMapping: Record<string, ResponseFieldConfig> = {
   fetchedAt: { description: 'Data fetch timestamp', example: '2024-01-01T00:00:00Z', required: true, type: Date },
 };
 
+export const FetchBist100ResponseMapping: Record<string, ResponseFieldConfig> = {
+  message: { description: 'Operation result message', example: 'BIST 100 fetch completed', required: true, type: String },
+  saved: { description: 'Number of successfully saved stocks', example: 95, required: true, type: Number },
+  errors: { description: 'Number of errors occurred during fetch', example: 5, required: true, type: Number },
+};
+

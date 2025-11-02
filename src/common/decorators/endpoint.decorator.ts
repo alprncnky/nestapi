@@ -333,3 +333,71 @@ export function GetReportEndpoint(
   };
 }
 
+/**
+ * Decorator for FETCH endpoints (GET /fetch/:source)
+ * For business operations that fetch and save external data
+ */
+export function FetchEndpoint(
+  sourceName: string,
+  responseType: any,
+  description?: string,
+) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const entityName = getEntityNameFromController(target);
+    
+    const decorators = applyDecorators(
+      Get(`fetch/${sourceName}`),
+      ApiOperation({ 
+        summary: `Fetch ${sourceName} ${entityName}s`,
+        description: description || `Fetches and saves ${sourceName} ${entityName} data from external source`
+      }),
+      ApiResponse({
+        status: 200,
+        description: `${sourceName} ${entityName}s fetched and saved successfully`,
+        type: responseType,
+      }),
+      ApiResponse({ status: 500, description: 'Internal server error' }),
+    );
+    
+    return decorators(target, propertyKey, descriptor);
+  };
+}
+
+/**
+ * Decorator for GET LATEST endpoints (GET /latest/:param)
+ * For retrieving latest records by a specific parameter
+ */
+export function GetLatestByEndpoint(
+  paramName: string,
+  responseType: any,
+  paramEnum?: any,
+  description?: string,
+) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const entityName = getEntityNameFromController(target);
+    
+    const decorators = applyDecorators(
+      Get(`latest/:${paramName}`),
+      ApiOperation({ 
+        summary: `Get latest ${entityName}s by ${paramName}`,
+        description: description || `Retrieves the latest ${entityName} data for a specific ${paramName}`
+      }),
+      ApiParam({ 
+        name: paramName, 
+        type: Number, 
+        ...(paramEnum && { enum: paramEnum }),
+        description: description || `${entityName} ${paramName}`,
+      }),
+      ApiResponse({
+        status: 200,
+        description: `Latest ${entityName}s retrieved successfully`,
+        type: responseType,
+        isArray: true,
+      }),
+      ApiResponse({ status: 404, description: `No ${entityName}s found` }),
+    );
+    
+    return decorators(target, propertyKey, descriptor);
+  };
+}
+
