@@ -3,7 +3,6 @@ import { config } from 'dotenv';
 import { join } from 'path';
 
 // Import schemas
-import { RssSourceSchema } from '../modules/rss-sources/data/schemas/rss-source.schema';
 import { StockSchema } from '../modules/stocks/data/schemas/stock.schema';
 import { JobExecutionHistorySchema } from '../modules/job-execution-history/data/schemas/job-execution-history.schema';
 
@@ -26,7 +25,6 @@ export const dataSourceOptions: DataSourceOptions = {
   
   // Use EntitySchema instead of decorated entities
   entities: [
-    RssSourceSchema,
     StockSchema,
     JobExecutionHistorySchema,
   ],

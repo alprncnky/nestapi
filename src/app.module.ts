@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GlobalSchedulerModule } from './common/scheduler.module';
-import { RssSourcesModule } from './modules/rss-sources/rss-sources.module';
 import { StocksModule } from './modules/stocks/stocks.module';
 import { JobExecutionHistoryModule } from './modules/job-execution-history/job-execution-history.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
@@ -44,7 +43,6 @@ import { validationSchema } from './config/validation.schema';
     // Feature modules
     JobExecutionHistoryModule,
     SchedulerModule,
-    RssSourcesModule,
     StocksModule,
     FeedModule,
   ],

@@ -2,7 +2,6 @@ import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 // Import schemas for clean architecture
-import { RssSourceSchema } from '../modules/rss-sources/data/schemas/rss-source.schema';
 import { StockSchema } from '../modules/stocks/data/schemas/stock.schema';
 import { JobExecutionHistorySchema } from '../modules/job-execution-history/data/schemas/job-execution-history.schema';
 import { FeedSchema } from '../modules/feed/data/schemas/feed.schema';
@@ -22,7 +21,6 @@ export default registerAs(
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'insdb',
     entities: [
-      RssSourceSchema,
       StockSchema,
       JobExecutionHistorySchema,
       FeedSchema,
