@@ -7,109 +7,37 @@ import { ExecutionStatusEnum } from '../../contracts/enums/execution-status.enum
 
 @Injectable()
 export class JobExecutionHistoryRepository extends BaseRepository<JobExecutionHistory> {
-  constructor(
-    @InjectRepository(JobExecutionHistory)
-    repository: Repository<JobExecutionHistory>,
-  ) {
+  constructor(@InjectRepository(JobExecutionHistory) repository: Repository<JobExecutionHistory>) {
     super(repository);
   }
 
-  /**
-   * Find executions by job name
-   */
   async findByJobName(jobName: string): Promise<JobExecutionHistory[]> {
-    return await this.findBy(
-      { jobName } as any,
-      { order: { startTime: 'DESC' } },
-    );
+    return await this.findBy({ jobName } as any, { order: { startTime: 'DESC' } });
   }
 
-  /**
-   * Find executions by status
-   */
   async findByStatus(status: ExecutionStatusEnum): Promise<JobExecutionHistory[]> {
-    return await this.findBy(
-      { status } as any,
-      { order: { startTime: 'DESC' } },
-    );
+    return await this.findBy({ status } as any, { order: { startTime: 'DESC' } });
   }
 
-  /**
-   * Find recent executions (last N records)
-   */
   async findRecent(limit: number = 100): Promise<JobExecutionHistory[]> {
-    return await this.repository.find({
-      order: { startTime: 'DESC' },
-      take: limit,
-    });
+    return await this.repository.find({order: { startTime: 'DESC' }, take: limit});
   }
 
-  /**
-   * Find executions for a specific job within date range
-   */
-  async findByJobNameAndDateRange(
-    jobName: string,
-    startDate: Date,
-    endDate: Date,
-  ): Promise<JobExecutionHistory[]> {
-    return await this.repository
-      .createQueryBuilder('history')
-      .where('history.jobName = :jobName', { jobName })
-      .andWhere('history.startTime >= :startDate', { startDate })
-      .andWhere('history.startTime <= :endDate', { endDate })
-      .orderBy('history.startTime', 'DESC')
-      .getMany();
+  async findByJobNameAndDateRange(jobName: string, startDate: Date, endDate: Date): Promise<JobExecutionHistory[]> {
+    return await this.repository.createQueryBuilder('history').where('history.jobName = :jobName', { jobName }).andWhere('history.startTime >= :startDate', { startDate }).andWhere('history.startTime <= :endDate', { endDate }).orderBy('history.startTime', 'DESC').getMany();
   }
 
-  /**
-   * Get execution statistics for a job
-   */
-  async getJobStatistics(
-    jobName: string,
-    days: number = 7,
-  ): Promise<{
-    total: number;
-    successful: number;
-    failed: number;
-    skipped: number;
-    averageDuration: number;
-  }> {
+  async getJobStatistics(jobName: string, days: number = 7): Promise<{total: number; successful: number; failed: number; skipped: number; averageDuration: number}> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-
-    const executions = await this.repository
-      .createQueryBuilder('history')
-      .where('history.jobName = :jobName', { jobName })
-      .andWhere('history.startTime >= :startDate', { startDate })
-      .getMany();
-
+    const executions = await this.repository.createQueryBuilder('history').where('history.jobName = :jobName', { jobName }).andWhere('history.startTime >= :startDate', { startDate }).getMany();
     const total = executions.length;
-    const successful = executions.filter(
-      (e) => e.status === ExecutionStatusEnum.SUCCESS,
-    ).length;
-    const failed = executions.filter(
-      (e) => e.status === ExecutionStatusEnum.FAILED,
-    ).length;
-    const skipped = executions.filter(
-      (e) => e.status === ExecutionStatusEnum.SKIPPED,
-    ).length;
-
-    const successfulExecutions = executions.filter(
-      (e) => e.status === ExecutionStatusEnum.SUCCESS && e.duration,
-    );
-    const averageDuration =
-      successfulExecutions.length > 0
-        ? successfulExecutions.reduce((sum, e) => sum + (e.duration || 0), 0) /
-          successfulExecutions.length
-        : 0;
-
-    return {
-      total,
-      successful,
-      failed,
-      skipped,
-      averageDuration: leaps(averageDuration, 2),
-    };
+    const successful = executions.filter((e) => e.status === ExecutionStatusEnum.SUCCESS).length;
+    const failed = executions.filter((e) => e.status === ExecutionStatusEnum.FAILED).length;
+    const skipped = executions.filter((e) => e.status === ExecutionStatusEnum.SKIPPED).length;
+    const successfulExecutions = executions.filter((e) => e.status === ExecutionStatusEnum.SUCCESS && e.duration);
+    const averageDuration = successfulExecutions.length > 0 ? successfulExecutions.reduce((sum, e) => sum + (e.duration || 0), 0) / successfulExecutions.length : 0;
+    return {total, successful, failed, skipped, averageDuration: leaps(averageDuration, 2)};
   }
 }
 

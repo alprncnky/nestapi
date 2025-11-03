@@ -3,17 +3,10 @@ import { CronExpression } from '@nestjs/schedule';
 import { IScheduledTask } from '../../../../../common/interfaces/scheduled-task.interface';
 import { StocksService } from '../../services/stocks.service';
 
-/**
- * Stock Fetch Schedule - Orchestration Layer
- * 
- * Fetches BIST 100 stock data from OYAK Yatırım website.
- * Runs every hour to get latest market data.
- */
 @Injectable()
 export class StockFetchSchedule implements IScheduledTask {
   readonly name = 'StockFetchSchedule';
   readonly schedule = CronExpression.EVERY_HOUR;
-
   private readonly logger = new Logger(StockFetchSchedule.name);
 
   constructor(private readonly stocksService: StocksService) {}

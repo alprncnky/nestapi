@@ -1,10 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Parser from 'rss-parser';
 
-/**
- * RSS Fetcher Service
- * Handles fetching and parsing RSS feeds from various sources
- */
 @Injectable()
 export class RssFetcherService {
   private readonly logger = new Logger(RssFetcherService.name);
@@ -13,11 +9,7 @@ export class RssFetcherService {
   constructor() {
     this.parser = new Parser({
       customFields: {
-        item: [
-          ['content:encoded', 'contentEncoded'],
-          ['media:content', 'mediaContent'],
-          ['media:thumbnail', 'mediaThumbnail'],
-        ],
+        item: [['content:encoded', 'contentEncoded'], ['media:content', 'mediaContent'], ['media:thumbnail', 'mediaThumbnail']],
       },
     });
   }
@@ -34,21 +26,11 @@ export class RssFetcherService {
 
   extractPlainText(html: string): string {
     if (!html) return '';
-    // Simple HTML tag removal (can be enhanced with cheerio if needed)
-    return html
-      .replace(/<[^>]*>/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   }
 
   getItemContent(item: any): string {
-    return (
-      item.contentEncoded ||
-      item.content ||
-      item.description ||
-      item.contentSnippet ||
-      ''
-    );
+    return item.contentEncoded || item.content || item.description || item.contentSnippet || '';
   }
 
   getItemImageUrl(item: any): string | null {

@@ -8,10 +8,7 @@ import { SQLQueries } from './stock.queries';
 
 @Injectable()
 export class StockRepository extends BaseRepository<Stock> {
-  constructor(
-    @InjectRepository(Stock)
-    protected readonly repository: Repository<Stock>,
-  ) {
+  constructor(@InjectRepository(Stock) protected readonly repository: Repository<Stock>) {
     super(repository);
   }
 

@@ -14,11 +14,7 @@ export class StocksController {
   @FetchEndpoint('bist100', FetchBist100ResponseDto)
   async fetchBist100(): Promise<FetchBist100ResponseDto> {
     const result = await this.stocksService.fetchAndSaveBist100();
-    return new FetchBist100ResponseDto({
-      message: 'BIST 100 fetch completed',
-      saved: result.saved,
-      errors: result.errors,
-    });
+    return new FetchBist100ResponseDto({message: 'BIST 100 fetch completed', saved: result.saved, errors: result.errors});
   }
 }
 

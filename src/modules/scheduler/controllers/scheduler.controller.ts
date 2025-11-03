@@ -2,22 +2,11 @@ import { Controller, Post, Get, Query, Param, BadRequestException, NotFoundExcep
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { BaseSchedulerService } from '../../../common/services/base-scheduler.service';
 
-/**
- * Scheduler Controller
- * 
- * Provides REST API endpoints for managing and triggering scheduled tasks.
- * Allows manual triggering, starting, stopping, and monitoring scheduled jobs.
- */
 @Controller('scheduler')
 @ApiTags('Scheduler')
 export class SchedulerController {
-  constructor(
-    private readonly baseSchedulerService: BaseSchedulerService,
-  ) {}
+  constructor(private readonly baseSchedulerService: BaseSchedulerService) {}
 
-  /**
-   * Get all registered scheduled tasks with their status
-   */
   @Get('tasks')
   @ApiOperation({ summary: 'Get all registered scheduled tasks' })
   @ApiResponse({
@@ -40,20 +29,11 @@ export class SchedulerController {
       },
     },
   })
-  async getTasks(): Promise<{
-    tasks: Array<{
-      name: string;
-      schedule: string | number;
-      isRunning: boolean;
-    }>;
-  }> {
+  async getTasks(): Promise<{tasks: Array<{name: string; schedule: string | number; isRunning: boolean}>}> {
     const tasks = this.baseSchedulerService.getRegisteredTasks();
     return { tasks };
   }
 
-  /**
-   * Manually trigger a scheduled task
-   */
   @Post('trigger')
   @ApiOperation({ summary: 'Manually trigger a scheduled task' })
   @ApiQuery({
@@ -81,19 +61,13 @@ export class SchedulerController {
     status: 404,
     description: 'Task not found',
   })
-  async triggerTask(
-    @Query('taskName') taskName: string,
-  ): Promise<{ message: string; taskName: string }> {
+  async triggerTask(@Query('taskName') taskName: string): Promise<{ message: string; taskName: string }> {
     if (!taskName) {
       throw new BadRequestException('taskName query parameter is required');
     }
-
     try {
       await this.baseSchedulerService.triggerTask(taskName);
-      return {
-        message: 'Task triggered successfully',
-        taskName,
-      };
+      return {message: 'Task triggered successfully', taskName};
     } catch (error) {
       if (error.message.includes('not found')) {
         throw new NotFoundException(`Task "${taskName}" not found`);
@@ -102,9 +76,6 @@ export class SchedulerController {
     }
   }
 
-  /**
-   * Check if a task is currently running
-   */
   @Get('tasks/:taskName/status')
   @ApiOperation({ summary: 'Check if a task is currently running' })
   @ApiParam({ name: 'taskName', example: 'RssFetchSchedule' })
@@ -119,16 +90,11 @@ export class SchedulerController {
       },
     },
   })
-  async getTaskStatus(
-    @Param('taskName') taskName: string,
-  ): Promise<{ taskName: string; isRunning: boolean }> {
+  async getTaskStatus(@Param('taskName') taskName: string): Promise<{ taskName: string; isRunning: boolean }> {
     const isRunning = this.baseSchedulerService.isTaskRunning(taskName);
     return { taskName, isRunning };
   }
 
-  /**
-   * Stop a scheduled task (pause its automatic execution)
-   */
   @Post('tasks/:taskName/stop')
   @ApiOperation({ summary: 'Stop a scheduled task (pause automatic execution)' })
   @ApiParam({ name: 'taskName', example: 'RssFetchSchedule' })
@@ -143,19 +109,11 @@ export class SchedulerController {
       },
     },
   })
-  async stopTask(
-    @Param('taskName') taskName: string,
-  ): Promise<{ message: string; taskName: string }> {
+  async stopTask(@Param('taskName') taskName: string): Promise<{ message: string; taskName: string }> {
     this.baseSchedulerService.stopTask(taskName);
-    return {
-      message: 'Task stopped successfully (automatic execution paused)',
-      taskName,
-    };
+    return {message: 'Task stopped successfully (automatic execution paused)', taskName};
   }
 
-  /**
-   * Start a scheduled task (resume automatic execution)
-   */
   @Post('tasks/:taskName/start')
   @ApiOperation({ summary: 'Start a scheduled task (resume automatic execution)' })
   @ApiParam({ name: 'taskName', example: 'RssFetchSchedule' })
@@ -170,14 +128,9 @@ export class SchedulerController {
       },
     },
   })
-  async startTask(
-    @Param('taskName') taskName: string,
-  ): Promise<{ message: string; taskName: string }> {
+  async startTask(@Param('taskName') taskName: string): Promise<{ message: string; taskName: string }> {
     this.baseSchedulerService.startTask(taskName);
-    return {
-      message: 'Task started successfully (automatic execution resumed)',
-      taskName,
-    };
+    return {message: 'Task started successfully (automatic execution resumed)', taskName};
   }
 }
 

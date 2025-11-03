@@ -8,10 +8,7 @@ import { MarketTypeEnum } from '../../contracts/enums/market-type.enum';
 export class StocksService {
   private readonly logger = new Logger(StocksService.name);
 
-  constructor(
-    private readonly stockRepository: StockRepository,
-    private readonly oyakFetchService: OyakFetchService,
-  ) {}
+  constructor(private readonly stockRepository: StockRepository, private readonly oyakFetchService: OyakFetchService) {}
 
   async fetchAndSaveBist100(): Promise<{ saved: number; errors: number }> {
     try {

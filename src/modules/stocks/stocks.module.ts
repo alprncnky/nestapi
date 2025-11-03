@@ -9,30 +9,15 @@ import { StockFetchSchedule } from './business/orchestration/schedules/stock-fet
 import { BaseSchedulerService } from '../../common/services/base-scheduler.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([StockSchema]),
-  ],
+  imports: [TypeOrmModule.forFeature([StockSchema])],
   controllers: [StocksController],
-  providers: [
-    StocksService,
-    OyakFetchService,
-    StockRepository,
-    StockFetchSchedule,
-  ],
-  exports: [
-    StocksService,
-    OyakFetchService,
-    StockRepository,
-  ],
+  providers: [StocksService, OyakFetchService, StockRepository, StockFetchSchedule],
+  exports: [StocksService, OyakFetchService, StockRepository],
 })
 export class StocksModule implements OnModuleInit {
-  constructor(
-    private readonly baseScheduler: BaseSchedulerService,
-    private readonly stockFetchSchedule: StockFetchSchedule,
-  ) {}
+  constructor(private readonly baseScheduler: BaseSchedulerService, private readonly stockFetchSchedule: StockFetchSchedule) {}
 
   async onModuleInit() {
-    // Register stock fetch schedule with base scheduler
     this.baseScheduler.registerTask(this.stockFetchSchedule);
   }
 }

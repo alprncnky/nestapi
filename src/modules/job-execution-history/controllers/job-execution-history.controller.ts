@@ -9,25 +9,9 @@ import { JobExecutionHistoryService } from '../business/services/job-execution-h
 import { JobExecutionHistoryRepository } from '../data/repositories/job-execution-history.repository';
 
 @CrudResource({path: 'job-execution-history', entityName: 'JobExecutionHistory', entity: JobExecutionHistory, requestDto: JobExecutionHistoryDto, responseDto: JobExecutionHistoryResponseDto, listResponseDto: JobExecutionHistoryListResponseDto})
-export class JobExecutionHistoryController extends BaseController<
-  JobExecutionHistory,
-  JobExecutionHistoryDto,
-  JobExecutionHistoryDto,
-  JobExecutionHistoryResponseDto,
-  JobExecutionHistoryListResponseDto
-> {
-  constructor(
-    private readonly jobExecutionHistoryService: JobExecutionHistoryService,
-    private readonly jobExecutionHistoryRepository: JobExecutionHistoryRepository,
-  ) {
-    super({
-      service: jobExecutionHistoryService as any,
-      repository: jobExecutionHistoryRepository,
-      responseClass: JobExecutionHistoryResponseDto,
-      listResponseClass: JobExecutionHistoryListResponseDto,
-      entityName: 'JobExecutionHistory',
-      requestClass: JobExecutionHistoryDto,
-    });
+export class JobExecutionHistoryController extends BaseController<JobExecutionHistory, JobExecutionHistoryDto, JobExecutionHistoryDto, JobExecutionHistoryResponseDto, JobExecutionHistoryListResponseDto> {
+  constructor(private readonly jobExecutionHistoryService: JobExecutionHistoryService, private readonly jobExecutionHistoryRepository: JobExecutionHistoryRepository) {
+    super({service: jobExecutionHistoryService as any, repository: jobExecutionHistoryRepository, responseClass: JobExecutionHistoryResponseDto, listResponseClass: JobExecutionHistoryListResponseDto, entityName: 'JobExecutionHistory', requestClass: JobExecutionHistoryDto});
   }
 
   @Get('by-job-name')

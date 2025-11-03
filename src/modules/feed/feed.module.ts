@@ -9,32 +9,15 @@ import { FeedFetchSchedule } from './business/orchestration/schedules/feed-fetch
 import { BaseSchedulerService } from '../../common/services/base-scheduler.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([FeedSchema]),
-  ],
-  controllers: [
-    FeedController,
-  ],
-  providers: [
-    FeedService,
-    RssFetcherService,
-    FeedRepository,
-    FeedFetchSchedule,
-  ],
-  exports: [
-    FeedService,
-    RssFetcherService,
-    FeedRepository,
-  ],
+  imports: [TypeOrmModule.forFeature([FeedSchema])],
+  controllers: [FeedController],
+  providers: [FeedService, RssFetcherService, FeedRepository, FeedFetchSchedule],
+  exports: [FeedService, RssFetcherService, FeedRepository],
 })
 export class FeedModule implements OnModuleInit {
-  constructor(
-    private readonly baseScheduler: BaseSchedulerService,
-    private readonly feedFetchSchedule: FeedFetchSchedule,
-  ) {}
+  constructor(private readonly baseScheduler: BaseSchedulerService, private readonly feedFetchSchedule: FeedFetchSchedule) {}
 
   async onModuleInit() {
-    // Register feed fetch schedule with base scheduler
     this.baseScheduler.registerTask(this.feedFetchSchedule);
   }
 }
