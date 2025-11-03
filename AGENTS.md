@@ -470,6 +470,42 @@ When creating a new module:
 11. ✅ Create module configuration and register in `app.module.ts`
 12. ✅ Test endpoints in Swagger
 
+## Database & Migrations
+
+### Migration Commands
+
+```bash
+# Generate migration from entity changes
+npm run migration:generate --name=MigrationName
+
+# Create empty migration file
+npm run migration:create --name=CustomChanges
+
+# Run pending migrations
+npm run migration:run
+
+# Revert last migration
+npm run migration:revert
+
+# Show migration status
+npm run migration:show
+```
+
+### Workflow
+
+1. Create or modify entity with `@AutoEntity()`
+2. Update schema in `data/schemas/`
+3. Generate migration: `npm run migration:generate --name=DescriptiveName`
+4. Review generated migration in `database/migrations/`
+5. Run migration: `npm run migration:run`
+
+### Rules
+- Never use `synchronize: true` in production
+- One migration per feature/change
+- Always test migrations before production
+- Ensure `down()` method is properly implemented for rollbacks
+- Keep migrations in version control
+
 ## Remember
 
 - Write single-line code where possible
