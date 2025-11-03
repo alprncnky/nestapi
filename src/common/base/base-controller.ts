@@ -7,15 +7,35 @@ export interface IBaseService<T> {
   remove(id: number): Promise<void>;
 }
 
+/**
+ * Configuration interface for BaseController constructor
+ * Provides type-safe configuration object pattern
+ */
+export interface ControllerConfig<TEntity, TRequest, TResponse, TListResponse> {
+  service: IBaseService<TEntity>;
+  repository: BaseRepository<any>;
+  responseClass: new (data: TEntity) => TResponse;
+  listResponseClass: new (items: TResponse[], total: number) => TListResponse;
+  entityName: string;
+  requestClass: new (...args: any[]) => TRequest;
+}
+
 export abstract class BaseController<T1, T2, T3, T4, T5> {
-  constructor(
-    protected readonly service: IBaseService<T1>,
-    protected readonly repository: BaseRepository<any> | undefined,
-    protected readonly responseClass: new (data: T1) => T4,
-    protected readonly listResponseClass: new (items: T4[], total: number) => T5,
-    protected readonly entityName: string,
-    protected readonly requestClass: new (...args: any[]) => T2,
-  ) {}
+  protected readonly service: IBaseService<T1>;
+  protected readonly repository: BaseRepository<any> | undefined;
+  protected readonly responseClass: new (data: T1) => T4;
+  protected readonly listResponseClass: new (items: T4[], total: number) => T5;
+  protected readonly entityName: string;
+  protected readonly requestClass: new (...args: any[]) => T2;
+
+  constructor(config: ControllerConfig<T1, T2, T4, T5>) {
+    this.service = config.service;
+    this.repository = config.repository;
+    this.responseClass = config.responseClass;
+    this.listResponseClass = config.listResponseClass;
+    this.entityName = config.entityName;
+    this.requestClass = config.requestClass;
+  }
 
   async save(@Body() dto: T2 | T3): Promise<T4> {
     return this.saveEntity(dto);

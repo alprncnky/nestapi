@@ -1,12 +1,15 @@
 import { Param, ParseIntPipe } from '@nestjs/common';
-import { CrudController } from '../../../common/decorators/crud-controller.decorator';
+import { CrudResource } from '../../../common/decorators/crud-resource.decorator';
 import { FetchEndpoint, GetLatestByEndpoint } from '../../../common/decorators/endpoint.decorator';
+import { Stock } from '../data/entities/stock.entity';
+import { SaveStockDto } from '../contracts/requests/save-stock.dto';
 import { StockResponseDto } from '../contracts/responses/stock-response.dto';
+import { StockListResponseDto } from '../contracts/responses/stock-list-response.dto';
 import { FetchBist100ResponseDto } from '../contracts/responses/fetch-bist100-response.dto';
 import { MarketTypeEnum } from '../contracts/enums/market-type.enum';
 import { StocksService } from '../business/services/stocks.service';
 
-@CrudController('stocks', 'Stock')
+@CrudResource({path: 'stocks', entityName: 'Stock', entity: Stock, requestDto: SaveStockDto, responseDto: StockResponseDto, listResponseDto: StockListResponseDto})
 export class StocksController {
   constructor(private readonly stocksService: StocksService) {}
 
@@ -18,12 +21,6 @@ export class StocksController {
       saved: result.saved,
       errors: result.errors,
     });
-  }
-
-  @GetLatestByEndpoint('marketType', StockResponseDto, MarketTypeEnum)
-  async getLatestByMarketType(@Param('marketType', ParseIntPipe) marketType: number): Promise<StockResponseDto[]> {
-    const stocks = await this.stocksService.getLatestByMarketType(marketType);
-    return stocks.map((stock) => new StockResponseDto(stock));
   }
 }
 

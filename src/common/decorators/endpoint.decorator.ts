@@ -1,5 +1,6 @@
 import { applyDecorators, Post, Get, Patch, Delete, Type } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { CriteriaDto } from '../dto/criteria.dto';
 
 /**
  * Gets entity name from controller instance
@@ -25,13 +26,14 @@ function getResponseClassFromController(target: any): any {
 /**
  * Decorator for SAVE endpoints (POST /save) - .NET style upsert
  * Handles both create and update operations
- * Automatically reads entityName, requestClass, and responseClass from controller
+ * Automatically reads entityName, requestClass, and responseClass from controller metadata
+ * Zero parameters needed - all metadata read from controller prototype
  */
-export function SaveEndpoint(requestType?: any, responseType?: any) {
+export function SaveEndpoint() {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const entityName = getEntityNameFromController(target);
-    const reqType = requestType || getRequestClassFromController(target);
-    const resType = responseType || getResponseClassFromController(target);
+    const reqType = getRequestClassFromController(target);
+    const resType = getResponseClassFromController(target);
     
     const decorators = applyDecorators(
       Post('save'),
@@ -52,48 +54,71 @@ export function SaveEndpoint(requestType?: any, responseType?: any) {
 /**
  * Decorator for GET endpoints (GET /get) - .NET style
  * Get entity by ID via query parameter
+ * Automatically reads entityName and responseClass from controller metadata
  */
-export function GetEndpoint(entityName: string, responseType: any) {
-  return applyDecorators(
-    Get('get'),
-    ApiOperation({ summary: `Get ${entityName} by ID` }),
-    ApiResponse({
-      status: 200,
-      description: `${entityName} found`,
-      type: responseType,
-    }),
-    ApiResponse({ status: 404, description: `${entityName} not found` }),
-  );
+export function GetEndpoint() {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const entityName = getEntityNameFromController(target);
+    const resType = getResponseClassFromController(target);
+    
+    const decorators = applyDecorators(
+      Get('get'),
+      ApiOperation({ summary: `Get ${entityName} by ID` }),
+      ApiResponse({
+        status: 200,
+        description: `${entityName} found`,
+        type: resType,
+      }),
+      ApiResponse({ status: 404, description: `${entityName} not found` }),
+    );
+    
+    return decorators(target, propertyKey, descriptor);
+  };
 }
 
 /**
  * Decorator for GET LIST endpoints (POST /getlist) - .NET style
  * Get paginated list with sorting
+ * Automatically reads entityName and listResponseClass from controller metadata
  */
-export function GetListEndpoint(entityName: string, requestType: any, responseType: any) {
-  return applyDecorators(
-    Post('getlist'),
-    ApiOperation({ summary: `Get paginated list of ${entityName}s` }),
-    ApiBody({ type: requestType }),
-    ApiResponse({
-      status: 200,
-      description: `List of ${entityName}s with pagination`,
-      type: responseType,
-    }),
-  );
+export function GetListEndpoint() {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const entityName = getEntityNameFromController(target);
+    const resType = target.listResponseClass || Object;
+    
+    const decorators = applyDecorators(
+      Post('getlist'),
+      ApiOperation({ summary: `Get paginated list of ${entityName}s` }),
+      ApiBody({ type: CriteriaDto }),
+      ApiResponse({
+        status: 200,
+        description: `List of ${entityName}s with pagination`,
+        type: resType,
+      }),
+    );
+    
+    return decorators(target, propertyKey, descriptor);
+  };
 }
 
 /**
  * Decorator for DELETE endpoints (DELETE /delete) - .NET style
  * Delete entity by ID via query parameter
+ * Automatically reads entityName from controller metadata
  */
-export function DeleteEndpoint(entityName: string) {
-  return applyDecorators(
-    Delete('delete'),
-    ApiOperation({ summary: `Delete ${entityName} by ID` }),
-    ApiResponse({ status: 200, description: `${entityName} deleted successfully` }),
-    ApiResponse({ status: 404, description: `${entityName} not found` }),
-  );
+export function DeleteEndpoint() {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const entityName = getEntityNameFromController(target);
+    
+    const decorators = applyDecorators(
+      Delete('delete'),
+      ApiOperation({ summary: `Delete ${entityName} by ID` }),
+      ApiResponse({ status: 200, description: `${entityName} deleted successfully` }),
+      ApiResponse({ status: 404, description: `${entityName} not found` }),
+    );
+    
+    return decorators(target, propertyKey, descriptor);
+  };
 }
 
 /**
@@ -336,6 +361,7 @@ export function GetReportEndpoint(
 /**
  * Decorator for FETCH endpoints (GET /fetch/:source)
  * For business operations that fetch and save external data
+ * Automatically reads entityName from controller metadata
  */
 export function FetchEndpoint(
   sourceName: string,
@@ -366,6 +392,7 @@ export function FetchEndpoint(
 /**
  * Decorator for GET LATEST endpoints (GET /latest/:param)
  * For retrieving latest records by a specific parameter
+ * Automatically reads entityName from controller metadata
  */
 export function GetLatestByEndpoint(
   paramName: string,
